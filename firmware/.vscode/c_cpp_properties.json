@@ -1,0 +1,59 @@
+{
+    "configurations": [
+        {
+            "name": "!!! WARNING !!! AUTO-GENERATED FILE, PLEASE DO NOT MODIFY IT AND USE https://docs.platformio.org/page/projectconf/section_env_build.html#build-flags"
+        },
+        {
+            "name": "Linux",
+            "includePath": [
+                "/home/christian/Projects/sdb-xmas-train/firmware/include",
+                "/home/christian/Projects/sdb-xmas-train/firmware/src",
+                "/home/christian/.platformio/packages/framework-arduinoavr/cores/arduino",
+                "/home/christian/.platformio/packages/framework-arduinoavr/variants/eightanaloginputs",
+                "/home/christian/Projects/sdb-xmas-train/firmware/.pio/libdeps/uno/ACS712 Current Sensor_ID1601/src",
+                "/home/christian/Projects/sdb-xmas-train/firmware/.pio/libdeps/uno/Adafruit NeoPixel_ID28",
+                "/home/christian/Projects/sdb-xmas-train/firmware/.pio/libdeps/uno/Servo_ID883/src",
+                "/home/christian/.platformio/packages/framework-arduinoavr/libraries/__cores__/arduino/EEPROM/src",
+                "/home/christian/.platformio/packages/framework-arduinoavr/libraries/__cores__/arduino/HID/src",
+                "/home/christian/.platformio/packages/framework-arduinoavr/libraries/__cores__/arduino/SPI/src",
+                "/home/christian/.platformio/packages/framework-arduinoavr/libraries/__cores__/arduino/SoftwareSerial/src",
+                "/home/christian/.platformio/packages/framework-arduinoavr/libraries/__cores__/arduino/Wire/src",
+                "/home/christian/.platformio/packages/tool-unity",
+                ""
+            ],
+            "browse": {
+                "limitSymbolsToIncludedHeaders": true,
+                "path": [
+                    "/home/christian/Projects/sdb-xmas-train/firmware/include",
+                    "/home/christian/Projects/sdb-xmas-train/firmware/src",
+                    "/home/christian/.platformio/packages/framework-arduinoavr/cores/arduino",
+                    "/home/christian/.platformio/packages/framework-arduinoavr/variants/eightanaloginputs",
+                    "/home/christian/Projects/sdb-xmas-train/firmware/.pio/libdeps/uno/ACS712 Current Sensor_ID1601/src",
+                    "/home/christian/Projects/sdb-xmas-train/firmware/.pio/libdeps/uno/Adafruit NeoPixel_ID28",
+                    "/home/christian/Projects/sdb-xmas-train/firmware/.pio/libdeps/uno/Servo_ID883/src",
+                    "/home/christian/.platformio/packages/framework-arduinoavr/libraries/__cores__/arduino/EEPROM/src",
+                    "/home/christian/.platformio/packages/framework-arduinoavr/libraries/__cores__/arduino/HID/src",
+                    "/home/christian/.platformio/packages/framework-arduinoavr/libraries/__cores__/arduino/SPI/src",
+                    "/home/christian/.platformio/packages/framework-arduinoavr/libraries/__cores__/arduino/SoftwareSerial/src",
+                    "/home/christian/.platformio/packages/framework-arduinoavr/libraries/__cores__/arduino/Wire/src",
+                    "/home/christian/.platformio/packages/tool-unity",
+                    ""
+                ]
+            },
+            "defines": [
+                "PLATFORMIO=40003",
+                "ARDUINO_AVR_NANO",
+                "F_CPU=16000000L",
+                "ARDUINO_ARCH_AVR",
+                "ARDUINO=10805",
+                "__AVR_ATmega328P__",
+                ""
+            ],
+            "intelliSenseMode": "clang-x64",
+            "cStandard": "c11",
+            "cppStandard": "c++11",
+            "compilerPath": "\"/home/christian/.platformio/packages/toolchain-atmelavr/bin/avr-gcc\" -mmcu=atmega328p"
+        }
+    ],
+    "version": 4
+}
