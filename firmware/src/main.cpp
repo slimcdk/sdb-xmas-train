@@ -2,10 +2,11 @@
 
 
 // MOTOR IO
-#define MOTOR_SENSE_PIN           10
-#define MOTOR_CTRL_PIN 		        9
-#define MOTOR_DIR_PIN 		        8
-#define TRAIN_DEBUG_SW_PIN        7
+#define MOTOR_SENSE_PIN           2
+#define MOTOR_CTRL_PIN 		        3
+#define MOTOR_DIR_PIN 		        4
+#define TRAIN_MODE_SW_PIN         11
+#define RPI_ACTIVATE_MUSIC_PIN    10
 
 
 // train durations in seconds
@@ -48,7 +49,7 @@ void setup() {
   Serial.begin(9600);
   Serial.println("SDB Train booting..");
 
-  pinMode(TRAIN_DEBUG_SW_PIN, INPUT_PULLUP);
+  pinMode(TRAIN_MODE_SW_PIN, INPUT_PULLUP);
 
   /** MOTOR SETUP **/
   Serial.println("Setting up motor..");
@@ -79,7 +80,7 @@ void loop () {
   run_train = run_progress < TRAIN_RUN_DURATION;
 
   // run train all the time if switched
-  if (digitalRead(TRAIN_DEBUG_SW_PIN) == true) {
+  if (digitalRead(TRAIN_MODE_SW_PIN) == true) {
     run_train = true;
   }
   
@@ -92,8 +93,9 @@ void loop () {
   // determine motor speed
   boot_motor = (current_millis < stop_motor_boot);
   motor_speed = (run_train == true) ? TRAIN_MAX_SPEED : TRAIN_MIN_SPEED;
-  motor_speed = (boot_motor == true) ? TRAIN_BOOT_SPEED : motor_speed;
+  //motor_speed = (boot_motor == true) ? TRAIN_BOOT_SPEED : motor_speed;
 
+/*
   // time to check if motor is running
   if (run_train == true && current_millis > check_motor_state) {
     
@@ -105,12 +107,15 @@ void loop () {
       check_motor_state = current_millis + TRAIN_MOTOR_CHECK_UPSTART;
     }
   }
+  */
 
 
   // output to motor
   digitalWrite(MOTOR_DIR_PIN, HIGH);
-  analogWrite(MOTOR_CTRL_PIN, motor_speed);
+  //analogWrite(MOTOR_CTRL_PIN, motor_speed);
   digitalWrite(LED_BUILTIN, run_train);
+  digitalWrite(RPI_ACTIVATE_MUSIC_PIN, run_train);
+
 
   Serial.print(run_train ? "KØR" : "STOP");
   Serial.print("\t");
@@ -124,4 +129,5 @@ void loop () {
   Serial.print("\t");
   Serial.print(is_motor_running);
   Serial.println();
+
 }
