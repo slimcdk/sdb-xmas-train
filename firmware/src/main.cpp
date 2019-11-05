@@ -13,16 +13,16 @@
  * |-- run progress  ------------------------- |
  * |-- motor on time -------------- |
 **/
-#define TRAIN_T_BOOT      	2000
-#define TRAIN_T_RUN       	5000
-#define TRAIN_T_BREAK     	1000
-#define TRAIN_T_STOP      	10000
+#define TRAIN_T_BOOT      	0
+#define TRAIN_T_RUN       	30000
+#define TRAIN_T_BREAK     	2000
+#define TRAIN_T_STOP      	180000
 
-#define TRAIN_S_BOOT      	1
+#define TRAIN_S_BOOT      	1.0
 #define TRAIN_S_MAX		0.5
-#define TRAIN_S_MIN		0
+#define TRAIN_S_MIN		0.0
 
-#define MOTOR_SAMPLES     	30
+#define MOTOR_SAMPLES     	35
 #define MOTOR_SAMPLE_TOL  	5
 
 
@@ -42,7 +42,7 @@ struct CONFIG {
 
 // data structure for Arduino <-> RPi serial communication
 struct TRAIN_DATA {
-  uint32_t progress;
+  uint16_t progress;
   uint8_t motor_speed;
   bool motor_sense;
 };
@@ -65,20 +65,6 @@ bool boot_mode, normal_mode, breaking_mode, nonstop_mode, is_motor_running, run_
 
 TRAIN_DATA train_data;
 CONFIG motor;
-
-
-/**
- * Transmits data to Raspberry Pi over serial.
- */
-void postData() {
-  //Serial.print(String(train_data.progress) + ";" + String(train_data.motor_speed) + ";" + String(train_data.motor_sense) + ";" + "\n");
-/*
-  char b[sizeof(train_data)];
-  memcpy(b, &train_data, sizeof(train_data));
-  //Serial.println(sizeof(b));
-  Serial.write(b, sizeof(b));
-*/
-}
 
 
 /**
@@ -113,7 +99,7 @@ void setup() {
   run_train = true;
 
   motor_sample_index = 0;
-  train_data = { run_progress, (uint8_t)(speed_scale*100.0),  is_motor_running};
+  train_data = {(uint16_t)(run_progress/1000), (uint8_t)(speed_scale*100.0),  is_motor_running};
   motor = {TRAIN_T_BOOT, TRAIN_T_RUN, TRAIN_T_BREAK, TRAIN_T_STOP, TRAIN_S_BOOT, TRAIN_S_MAX, TRAIN_S_MIN, true};
 
   //Serial.println("Setup finished");
@@ -163,13 +149,15 @@ void loop () {
   digitalWrite(LED_BUILTIN, run_train);
 
   // prepare data packages for transmission
-  train_data.progress = run_progress;
+  train_data.progress = (uint16_t) (run_progress / 1000);
   train_data.motor_speed = (uint8_t)(speed_scale*100.0) ;
   train_data.motor_sense = is_motor_running;
 
-  //if (last_speed_scale != speed_scale)
-  //  postData();
+  char b[sizeof(train_data)];
+  memcpy(b, &train_data, sizeof(train_data));
+  Serial.write(b, sizeof(b));
 
+/*
   //Serial.print(current_millis);
   //Serial.print(",");
   Serial.print(run_progress);
@@ -178,4 +166,5 @@ void loop () {
   Serial.print(",");
   Serial.print(is_motor_running);
   Serial.println(",");
+*/
 }
