@@ -1,34 +1,28 @@
-import serial
-import time
-import struct
-#import ctypes
-import os
-import glob
-import subprocess
-import RPi.GPIO as GPIO
-import random
-from mutagen.mp3 import MP3
+import serial, time, struct, os, glob, random
+from pydub import AudioSegment, effects
+from pydub.playback import play
+
 
 # device paths
-ARDUINO_PORT = '/dev/ttyUSB1'
+ARDUINO_PORT = '/dev/ttyUSB0'
 MUSIC_USB_PATH = '/media/usb'
 
-# serial reading
+# serial readings
 arduino = None
 struct_form = 'HB?'
 size = struct.calcsize(struct_form)
 
-player = None
 last_played_track = None
 stop_music_time = None
-music_is_playing = None
+
+playing_volume = -20
 
 
 ###########################
-# Called once before loop #
+# CALLED ONCE BEFORE LOOP #
 ###########################
 def setup():
-  global  arduino, player, stop_music_time, music_is_playing
+  global  arduino, stop_music_time
 
   # PySerial setup
   arduino = serial.Serial(
@@ -40,108 +34,82 @@ def setup():
     timeout=None
   )
 
-  # kill any existing player instances
-  subprocess.Popen(['killall', 'omxplayer.bin'], stdin=subprocess.PIPE)
-  if player != None:
-    player.stdin.write('q')
-    player.kill()
-
-  #print('Playable tracks', getTrackPaths())
   stop_music_time = time.time()
-  music_is_playing = False
 
 
 
 ##############################################
-# Repeats throughout the life of the program #
+# REPEATS THROUGHOUT THE LIFE OF THE PROGRAM #
 ##############################################
 def loop():
 
-  global arduino, player, stop_music_time, music_is_playing
+  global arduino, stop_music_time
 
   # read data from Arduino
   state = arduino.read(size)
   arduino.reset_input_buffer() #.flushInput()
   data = struct.unpack(struct_form, state)
-  progress = data[0]
   speed = data[1]
   is_motor_running = data[2]
+  print('time: {}\tstop music: {}\treading: {}'.format(time.time()//1, stop_music_time//1, data), end='\r', flush=True)
 
-  print(data, end='\r', flush=True)
-
-  # start player
-  should_play = (speed > 0) # or is_motor_running == True)
-  if should_play == True and music_is_playing == False:
-    music_is_playing = True
+  # start music
+  if (speed > 0) and (is_motor_running == True) and (time.time() > stop_music_time):
 
     # get a track to play
-    current_track_path = get_random_track()
-    current_track = MP3(current_track_path)
-    print('Track: {} has length {:.2f} seconds'.format(current_track_path, current_track.info.length))
+    track_path = get_new_track()
+    _track = AudioSegment.from_file(track_path, format='mp3')
 
-    #settings for the current track
-    vol = -20 - current_track.info.track_gain
-    print('gain: {} \t peak: {} \t vol: {}'.format(current_track.info.track_gain, current_track.info.track_peak, vol))
-
-    # start player and set time for player to terminate
-    player = subprocess.Popen(['omxplayer', '-o', 'local', '--vol', '-{}'.format(vol), current_track_path], stdin=subprocess.PIPE)
-    stop_music_time = time.time() + current_track.info.length + 1
-
-
-  # terminate player
-  if (time.time() > stop_music_time) and music_is_playing == True:
-    music_is_playing = False
-    print('Time to halt music -> ', end=' ')
-
-    if player.poll() == True:
-      print('force quitting player')
-      player.kill()
-    else:
-      print('player already terminated')
+    # adjust volume
+    track = match_target_amplitude(_track, playing_volume)
+    print('\nplaying: {}'.format(track_path))
+    play(track)
+    stop_music_time = time.time() + (track.duration_seconds/1000) + 5
 
 
 
-
-
-
-
-#################################################################
-# Returns a new (last played is excluded) random selected track #
-#################################################################
-def get_random_track():
+########################################################
+# RETURNS A NEW TRACK, THAT IS NOT THE PREVIOUS PLAYED #
+########################################################
+def get_new_track():
   global last_played_track
 
-  # fetch tracks from USB stick
-  tracks = glob.glob( os.path.join(MUSIC_USB_PATH, '*.mp3'))
+  # get playliste and pick track
+  playlist = get_playlist()
+  track = random.choice(playlist)
 
   # exclude last played track, if others are available
-  if len(tracks) > 1 and last_played_track != None:
-    tracks.remove(last_played_track)
+  if len(playlist) > 1 and last_played_track != None:
+    while last_played_track == track:
+      track = random.choice(playlist)
 
-  # return random selected track
-  new_track = random.choice(tracks)
-  last_played_track = new_track
-  return new_track
-
+  last_played_track = track
+  return track
 
 
 
-##################################
-# Normalizes gain for all tracks #
-##################################
-def convert_tracks():
-  pass
+###############################
+# FETCH TRACKS FROM USB STICK #
+###############################
+def get_playlist():
+  return glob.glob( os.path.join(MUSIC_USB_PATH, '*.mp3'))
+
+
+
+################################
+# ADJUSTS AMPLITUDE FOR TRACKS #
+################################
+def match_target_amplitude(sound, target_dBFS):
+    change_in_dBFS = target_dBFS - sound.dBFS
+    return sound.apply_gain(change_in_dBFS)
 
 
 
 #################
-# Program entry #
+# PROGRAM ENTRY #
 #################
 def main():
   setup()
-  #time.sleep(2)
-
-
   try:
     while True:
       loop()

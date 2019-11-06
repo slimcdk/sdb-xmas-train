@@ -18,8 +18,8 @@
 #define TRAIN_T_BREAK     	2000
 #define TRAIN_T_STOP      	180000
 
-#define TRAIN_S_BOOT      	1.0
-#define TRAIN_S_MAX		0.5
+#define TRAIN_S_BOOT      	0.8
+#define TRAIN_S_MAX		0.2
 #define TRAIN_S_MIN		0.0
 
 #define MOTOR_SAMPLES     	35
