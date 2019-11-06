@@ -64,12 +64,12 @@ def loop():
 
       # adjust volume
       track = match_target_amplitude(_track, playing_volume)
-      print('\nplaying: {}'.format(track_path))
+      print('playing: {}'.format(track_path))
       play(track)
       stop_music_time = time.time() + (track.duration_seconds/1000) + 5
 
     else:
-      print('Playlist is empty :(')
+      print('Playlist is empty :( ')
 
 
 ########################################################

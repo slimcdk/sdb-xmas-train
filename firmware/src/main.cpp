@@ -29,10 +29,10 @@
 
 // stores data for the motor timings and speeds
 struct CONFIG {
-  uint64_t boot_tm;
-  uint64_t run_tm;
-  uint64_t break_tm;
-  uint64_t stop_tm;
+  uint32_t boot_tm;
+  uint32_t run_tm;
+  uint32_t break_tm;
+  uint32_t stop_tm;
   float boot_spd;
   float max_spd;
   float min_spd;
@@ -48,18 +48,10 @@ struct TRAIN_DATA {
 };
 
 
-union TX_PACK {
-  TRAIN_DATA S_Packet_t;
-  TRAIN_DATA data;
-  char ser_data[sizeof(TRAIN_DATA)];
-};
-
-
-
 uint64_t current_millis;
 uint32_t run_progress;
 uint8_t motor_sample_index;
-float speed_scale, last_speed_scale;
+float speed_scale;
 bool boot_mode, normal_mode, breaking_mode, nonstop_mode, is_motor_running, run_train, motor_run_samples[MOTOR_SAMPLES];
 
 
@@ -109,7 +101,6 @@ void setup() {
 void loop () {
 
   // variables to be used throughout the program loop
-  last_speed_scale = speed_scale;
   current_millis = millis();
   is_motor_running = isMotorRunning();
   nonstop_mode = digitalRead(TRAIN_MODE_PIN);
@@ -134,6 +125,8 @@ void loop () {
 
   // break motor
   } else if (breaking_mode) {
+
+    // soft breaking
     int run_progress_break = map(run_progress, (motor.boot_tm+motor.run_tm), (motor.boot_tm+motor.run_tm+motor.break_tm),  motor.break_tm, 0);
     speed_scale = ((double)run_progress_break / (double)motor.break_tm) * motor.max_spd;
 
