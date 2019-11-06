@@ -28,12 +28,13 @@ def setup():
   arduino = serial.Serial(
     port=ARDUINO_PORT,
     baudrate=115200,
-    parity=serial.PARITY_NONE,
-    stopbits=serial.STOPBITS_ONE,
-    bytesize=serial.EIGHTBITS,
-    timeout=None
+#    parity=serial.PARITY_NONE,
+#    stopbits=serial.STOPBITS_ONE,
+#    bytesize=serial.EIGHTBITS,
+    timeout=1
   )
-
+  arduino.setDTR(False) # no reset
+  time.sleep(0.5)
   stop_music_time = time.time()
 
 
@@ -54,18 +55,21 @@ def loop():
   print('time: {}\tstop music: {}\treading: {}'.format(time.time()//1, stop_music_time//1, data), end='\r', flush=True)
 
   # start music
-  if (speed > 0) and (is_motor_running == True) and (time.time() > stop_music_time):
+  if (is_motor_running == True) and (time.time() > stop_music_time):
+    if (len(get_playlist()) > 0):
 
-    # get a track to play
-    track_path = get_new_track()
-    _track = AudioSegment.from_file(track_path, format='mp3')
+      # get a track to play
+      track_path = get_new_track()
+      _track = AudioSegment.from_file(track_path, format='mp3')
 
-    # adjust volume
-    track = match_target_amplitude(_track, playing_volume)
-    print('\nplaying: {}'.format(track_path))
-    play(track)
-    stop_music_time = time.time() + (track.duration_seconds/1000) + 5
+      # adjust volume
+      track = match_target_amplitude(_track, playing_volume)
+      print('\nplaying: {}'.format(track_path))
+      play(track)
+      stop_music_time = time.time() + (track.duration_seconds/1000) + 5
 
+    else:
+      print('Playlist is empty :(')
 
 
 ########################################################
@@ -109,16 +113,13 @@ def match_target_amplitude(sound, target_dBFS):
 # PROGRAM ENTRY #
 #################
 def main():
-  setup()
   try:
+    setup()
     while True:
       loop()
   except Exception as e:
     print('Wooops!', e)
     arduino.close()
-    if player != None:
-      player.kill()
-
 
 if __name__ == '__main__':
   main()

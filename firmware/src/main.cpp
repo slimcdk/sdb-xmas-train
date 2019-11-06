@@ -13,13 +13,13 @@
  * |-- run progress  ------------------------- |
  * |-- motor on time -------------- |
 **/
-#define TRAIN_T_BOOT      	0
-#define TRAIN_T_RUN       	30000
-#define TRAIN_T_BREAK     	2000
-#define TRAIN_T_STOP      	180000
+#define TRAIN_T_BOOT      	UINT64_C(2000)
+#define TRAIN_T_RUN       	UINT64_C(4 * 60 * 1000)
+#define TRAIN_T_BREAK     	UINT64_C(2000)
+#define TRAIN_T_STOP      	UINT64_C(10 * 60 * 1000)
 
-#define TRAIN_S_BOOT      	0.8
-#define TRAIN_S_MAX		0.2
+#define TRAIN_S_BOOT      	0.4
+#define TRAIN_S_MAX		0.15
 #define TRAIN_S_MIN		0.0
 
 #define MOTOR_SAMPLES     	35
