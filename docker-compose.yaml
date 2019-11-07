@@ -13,8 +13,6 @@ services:
             - "/dev/ttyUSB0:/dev/ttyUSB0"
         volumes:
             - ./software:/software
-            - /media/usb:/media/usb
-
-
+            - /media/usb0:/media/usb
 
         command: ["python", "software/play.py"]
