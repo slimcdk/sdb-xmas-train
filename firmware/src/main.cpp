@@ -13,13 +13,13 @@
  * |-- run progress  ------------------------- |
  * |-- motor on time -------------- |
 **/
-#define TRAIN_T_BOOT      	UINT64_C(2000)
-#define TRAIN_T_RUN       	UINT64_C(4 * 60 * 1000)
-#define TRAIN_T_BREAK     	UINT64_C(2000)
-#define TRAIN_T_STOP      	UINT64_C(10 * 60 * 1000)
+#define TRAIN_T_BOOT      	UINT64_C(1 * 1000)
+#define TRAIN_T_RUN       	UINT64_C(1 * 60 * 1000)
+#define TRAIN_T_BREAK     	UINT64_C(2 * 1000)
+#define TRAIN_T_STOP      	UINT64_C(1 * 60 * 1000)
 
-#define TRAIN_S_BOOT      	0.4
-#define TRAIN_S_MAX		0.15
+#define TRAIN_S_BOOT      	0.8
+#define TRAIN_S_MAX		0.5
 #define TRAIN_S_MIN		0.0
 
 #define MOTOR_SAMPLES     	35
@@ -103,7 +103,7 @@ void loop () {
   // variables to be used throughout the program loop
   current_millis = millis();
   is_motor_running = isMotorRunning();
-  nonstop_mode = digitalRead(TRAIN_MODE_PIN);
+  //nonstop_mode = digitalRead(TRAIN_MODE_PIN);
 
   // compute current run progress
   run_progress = current_millis % (motor.boot_tm + motor.run_tm + motor.break_tm + motor.stop_tm);
@@ -135,6 +135,9 @@ void loop () {
     speed_scale = motor.min_spd;
   }
 
+  if (digitalRead(TRAIN_MODE_PIN)) {
+    speed_scale = 0.0;
+  }
 
   // write outputs
   digitalWrite(MOTOR_DIR_PIN, motor.direction);
@@ -151,11 +154,11 @@ void loop () {
   Serial.write(b, sizeof(b));
 
 /*
-  //Serial.print(current_millis);
-  //Serial.print(",");
+  Serial.print((uint32_t)current_millis);
+  Serial.print(",");
   Serial.print(run_progress);
   Serial.print(",");
-  Serial.print((uint8_t) (speed_scale * 100));
+  Serial.print((uint8_t) (speed_scale * 255));
   Serial.print(",");
   Serial.print(is_motor_running);
   Serial.println(",");
