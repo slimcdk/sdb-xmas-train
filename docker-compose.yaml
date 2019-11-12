@@ -12,4 +12,4 @@ services:
         - ./software:/software
         - /media/usb:/media/usb
       
-      command: ["python", "software/pwm.py"]
+      command: ["python", "software/conductor.py"]

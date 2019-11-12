@@ -55,7 +55,7 @@ def loop():
   print('time: {}\tstop music: {}\treading: {}'.format(time.time()//1, stop_music_time//1, data), end='\r', flush=True)
 
   # start music
-  if (is_motor_running == True) and (time.time() > stop_music_time):
+  if (speed > 0) and (is_motor_running == True) and (time.time() > stop_music_time):
     if (len(get_playlist()) > 0):
 
       # get a track to play
