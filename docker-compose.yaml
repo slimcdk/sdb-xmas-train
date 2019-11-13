@@ -10,6 +10,6 @@ services:
       privileged: true
       volumes:
         - ./software:/software
-        - /media/usb:/media/usb
+        - ./music:/music
       
       command: ["python", "software/conductor.py"]

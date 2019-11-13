@@ -29,7 +29,7 @@ usermod -aG docker $USER
 
 
 ## PYTHON MODULES
-pip3 install pydub docker-compose
+pip3 install pydub docker-compose mutagen
 
 
 ## REPO
