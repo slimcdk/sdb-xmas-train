@@ -20,7 +20,7 @@ apt upgrade -y
 
 
 ## BINs
-apt install git apt-transport-https ca-certificates software-properties-common python3 python3-pip omxplayer libavcodec-extra ffmpeg usbmount -y
+apt install git apt-transport-https ca-certificates software-properties-common python3 python3-pip libavcodec-extra ffmpeg usbmount libatlas-base-dev -y
 
 
 ## DOCKER
@@ -29,7 +29,8 @@ usermod -aG docker $USER
 
 
 ## PYTHON MODULES
-pip3 install pydub docker-compose mutagen
+pip3 install docker-compose
+pip3 install -f requirements.txt
 
 
 ## REPO
