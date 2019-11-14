@@ -12,5 +12,5 @@ services:
         - ./software:/sdb-train
         - /media/usb:/sdb-train/music
       
-      command: ["python", "/sdb-train/conductor.py"]
+      command: ["python3", "/sdb-train/conductor.py"]
 #      command: ["ls", "/sdb-train"]

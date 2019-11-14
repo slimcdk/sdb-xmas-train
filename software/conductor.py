@@ -13,7 +13,7 @@ ssr_pin =      11
 
 
 # music variables
-MUSIC_LIB_PATH = '/media/usb' #'/sdb-train/music'
+MUSIC_LIB_PATH = 'music'
 last_played_track = None
 stop_music_time = 0
 player = None
@@ -49,7 +49,7 @@ def setup():
   """program initialization"""
   print('Choo! Choo! The train is booting..')
 
-  global motor_vr, motor_vr_pin, motor_zf, motor_zf_pin, boot_time_offset
+  global motor, motor_vr_pin, boot_time_offset
 
   # configure motor IO
   GPIO.setmode(GPIO.BOARD)
