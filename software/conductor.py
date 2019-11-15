@@ -13,7 +13,7 @@ ssr_pin =      11
 
 
 # music variables
-MUSIC_LIB_PATH = 'music'
+MUSIC_LIB_PATH = '/sdb-train/music' # 'music'
 last_played_track = None
 stop_music_time = 0
 player = None
@@ -38,12 +38,15 @@ BREAK_COEF = 2
 GRAPH_TRANSITION_THRESHOLD = 5 # between 0 and MAX_SPEED: (MAX_SPEED/2) will eliminate the feature
 
 # managing variable
-OPEN_HOUR = time(18, 15, 0)
+OPEN_HOUR = time(8, 0, 0)
 CLOSE_HOUR = time(20, 0, 0)
 boot_time_offset = 0
 
 run_time = 30
 stop_time = (10 * 60)
+
+
+
 
 def setup():
   """program initialization"""
@@ -65,7 +68,7 @@ def setup():
   boot_time_offset = datetime.timestamp(datetime.now())
   print('found upbeat playlist:\n', get_upbeat_playlist(), '\nand playlist:\n', get_playlist(), '\n')
   print('Ready!')
-  print('date\t\t\t\topen\tprogress\t(run time, stop time)\t\tspeed\ttracks\tnew music\tnew player\tends at')
+  print('date\t\t\t\topen\tprogress\t(run time, stop time)\tspeed\ttracks\tnew music\tnew player\tends at')
   tm.sleep(1)
 
 
@@ -95,7 +98,7 @@ def loop_async():
         print('Could not get playlist!')
         playlist = []
 
-      print('date\t\t\t\topen\tprogress\t(run time, stop time)\t\tspeed\ttracks\tnew music\tnew player\tends at')
+#      print('date\t\t\t\topen\tprogress\t(run time, stop time)\tspeed\ttracks\tnew music\tnew player\tends at')
 
     # compute speed
     speed = speed_graph(progress, duration=run_time)
@@ -104,13 +107,16 @@ def loop_async():
   # if playlist has tracks
   if playlist:
     if current_time > track_stop_time:
-      if new_player is True:
-        new_player = False
-        player = OMXPlayer(playlist[0])
-        playlist.pop(0)
-      else:
-        player.load(playlist[0])
-        playlist.pop(0)
+      try:
+        if new_player is True:
+          new_player = False
+          player = OMXPlayer(playlist[0])
+          playlist.pop(0)
+        else:
+          player.load(playlist[0])
+          playlist.pop(0)
+      except:
+        print('Player error')
       track_stop_time = player.duration() + current_time # + 1000
 
 
@@ -122,8 +128,6 @@ def loop_async():
 
   motor.ChangeDutyCycle(int(speed))
   GPIO.output(ssr_pin, shop_is_open)
-
-
 
   print('{}\t{}\t{:06.02f} ({:03.0f}%)\t({:.02f}, {:.02f})\t\t{:.02f}\t{}\t{}\t\t{}\t\t{:.02f}'.format(current_date, shop_is_open, progress, progress/(run_time+stop_time)*100, run_time, stop_time, speed, len(playlist), start_music, new_player, track_stop_time), end='\r',flush=False)
 
@@ -250,7 +254,7 @@ def get_full_playlist():
 
 
 def main():
-  global player, motor_vr
+  global player, motor
 
   try:
     setup()
@@ -259,9 +263,9 @@ def main():
   except KeyboardInterrupt:
     pass
 
-  motor_vr.stop()
+  motor.stop()
   GPIO.cleanup()
-  player.quit()
+  player.stop()
 
 
 if __name__ == '__main__':

@@ -9,7 +9,7 @@ services:
       restart: always
       privileged: true
       volumes:
-        - ./software:/sdb-train
+#        - ./software:/sdb-train
         - /media/usb:/sdb-train/music
       
       command: ["python3", "/sdb-train/conductor.py"]
