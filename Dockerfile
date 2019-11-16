@@ -8,11 +8,9 @@ RUN apt-get -y install omxplayer python3.7 python3-pip usbmount python3-numpy
 # install Python modules
 RUN pip3 install -U omxplayer-wrapper RPI.GPIO mutagen
 
-#VOLUME /sdb-train
-#VOLUME /media/usb /sdb-train/music
 
-
-COPY software/conductor.py /sdb-train/conductor.py
+COPY conductor.py /sdb-train/conductor.py
+#COPY /media/usb /sdb-train/music
 
 WORKDIR /sdb-train
 CMD python3 /sdb-train/conductor.py
