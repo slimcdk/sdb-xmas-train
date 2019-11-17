@@ -9,11 +9,11 @@ import numpy as np
 """CONSTANTS"""
 # GPIO
 motor_vr_pin = 12
-ssr_pin =      11
-
+motor_relay_pin = 13
+ssr_pin = 11
 
 # music variables
-MUSIC_LIB_PATH = '/media/usb' #'/sdb-train/music'
+MUSIC_LIB_PATH = '/media/usb'
 last_played_track = None
 stop_music_time = 0
 player = None
@@ -23,12 +23,10 @@ start_music = True
 playlist_duration = 0
 new_player = True
 track_stop_time = 0
-tracks_to_play = 2
-
+tracks_to_play = 1
 
 # motor variables
 motor = None
-
 
 # train speed graph
 MAX_SPEED = 50
@@ -38,14 +36,14 @@ BREAK_COEF = 2
 GRAPH_TRANSITION_THRESHOLD = 5 # between 0 and MAX_SPEED: (MAX_SPEED/2) will eliminate the feature
 
 # managing variable
-OPEN_HOUR = time(8, 0, 0)
-CLOSE_HOUR = time(20, 0, 0)
+OPEN_HOUR = time(22-1, 2, 0)
+CLOSE_HOUR = time(22-1, 8, 0)
 boot_time_offset = 0
 print_time = 0
 
 default_run_time = 30
 run_time = default_run_time
-stop_time = (10 * 60)
+stop_time = (0.5 * 60)
 
 
 
@@ -61,10 +59,12 @@ def setup():
   GPIO.setwarnings(False)
   GPIO.setup(motor_vr_pin, GPIO.OUT)
   GPIO.setup(ssr_pin, GPIO.OUT)
+  GPIO.setup(motor_relay_pin, GPIO.OUT)
 
   GPIO.output(ssr_pin, GPIO.LOW)
+  GPIO.output(motor_relay_pin, GPIO.LOW)
 
-  motor = GPIO.PWM(motor_vr_pin, 50)
+  motor = GPIO.PWM(motor_vr_pin, 1000)
   motor.start(100-0)
 
   boot_time_offset = datetime.timestamp(datetime.now())
@@ -80,12 +80,14 @@ def loop_async():
 
   # time trackers
   current_date = datetime.now()
-  shop_is_open = is_shop_open(current_date)
   current_time = datetime.timestamp(current_date)
-  progress = current_time - boot_time_offset
+  shop_is_open = is_shop_open(current_date)
+  progress = 0
   speed = MIN_SPEED
 
   if shop_is_open is True:
+
+    progress = current_time - boot_time_offset
 
     # populate playlist
     if start_music is True:
@@ -105,7 +107,8 @@ def loop_async():
 
     # compute speed
     speed = speed_graph(progress, duration=run_time)
-
+    if progress < 2:
+      speed = 100
 
   # if playlist has tracks
   if playlist:
@@ -139,41 +142,14 @@ def loop_async():
     boot_time_offset = current_time
     start_music = True
 
-
-  motor.ChangeDutyCycle(100-int(speed))
+  GPIO.output(motor_relay_pin, (int(speed) > 0))
   GPIO.output(ssr_pin, shop_is_open)
+  motor.ChangeDutyCycle(100-int(speed))
 
   if current_time > print_time:
     print_time = current_time + 2
-    print('{}\t{}\t{:06.02f} ({:03.0f}%)\t({:.02f}, {:.02f})\t\t{:.02f}\t{}\t{}\t\t{}\t\t{:.02f}'.format(current_date, shop_is_open, progress, progress/(run_time+stop_time)*100, run_time, stop_time, speed, len(playlist), start_music, new_player, track_stop_time), end='\n',flush=False)
+    print('{}\t{}\t{:06.02f} ({:03.0f}%)\t({:06.02f}, {:06.02f})\t{:.02f}\t{}\t{}\t\t{}\t\t{:.02f}'.format(current_date, shop_is_open, progress, progress/(run_time+stop_time)*100, run_time, stop_time, speed, len(playlist), start_music, new_player, track_stop_time), end='\n',flush=False)
 
-
-
-
-def loop_blocking():
-  """main loop that utilizes sleep functions"""
-  global motor, stop_time, MIN_SPEED
-
-  if is_shop_open(datetime.now()):
-
-    playlist = get_sub_playlist(1)
-    print(playlist)
-
-    player = OMXPlayer(get_upbeat_track())
-    tm.sleep(player.duration())
-    motor.ChangeDutyCycle(50)
-
-    for track in playlist:
-      player.load(track, False)
-      print('playing track', player.get_filename(), 'with duration', player.duration())
-      time.sleep(player.duration())
-    player.stop()
-
-    motor.ChangeDutyCycle(0)
-    tm.sleep(stop_time)
-
-  else:
-    motor.ChangeDutyCycle(0)
 
 
 
