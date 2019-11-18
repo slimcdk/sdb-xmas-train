@@ -1,4 +1,4 @@
-import os, random, math, time as tm
+import os, random, math, time as timer
 from datetime import datetime, timedelta, time
 from glob import glob
 import RPi.GPIO as GPIO
@@ -23,7 +23,7 @@ start_music = True
 playlist_duration = 0
 new_player = True
 track_stop_time = 0
-tracks_to_play = 1
+tracks_to_play = 2
 
 # motor variables
 motor = None
@@ -36,14 +36,14 @@ BREAK_COEF = 2
 GRAPH_TRANSITION_THRESHOLD = 5 # between 0 and MAX_SPEED: (MAX_SPEED/2) will eliminate the feature
 
 # managing variable
-OPEN_HOUR = time(22-1, 2, 0)
-CLOSE_HOUR = time(22-1, 8, 0)
+OPEN_HOUR = time(8-1, 0, 0) # timezone offset
+CLOSE_HOUR = time(20-1, 0, 0) # timezone offset
 boot_time_offset = 0
 print_time = 0
 
 default_run_time = 30
 run_time = default_run_time
-stop_time = (0.5 * 60)
+stop_time = (10 * 60)
 
 
 
@@ -71,7 +71,7 @@ def setup():
   print('found upbeat playlist:\n', get_upbeat_playlist(), '\nand playlist:\n', get_playlist(), '\n')
   print('Ready!')
   print('date\t\t\t\topen\tprogress\t(run time, stop time)\tspeed\ttracks\tnew music\tnew player\tends at')
-  tm.sleep(1)
+  timer.sleep(1)
 
 
 def loop_async():
@@ -95,6 +95,7 @@ def loop_async():
       new_player = True
       playlist = []
       playlist_duration = default_run_time
+      run_time = default_run_time
 
       try:
         playlist = [get_upbeat_track()] + get_sub_playlist(tracks_to_play)
@@ -103,12 +104,14 @@ def loop_async():
         print('playlist', playlist, 'has length', playlist_duration)
       except:
         print('Could not get playlist!')
-        run_time = default_run_time
 
     # compute speed
     speed = speed_graph(progress, duration=run_time)
     if progress < 2:
       speed = 100
+
+  else:
+    boot_offset_time = current_time
 
   # if playlist has tracks
   if playlist:
@@ -138,7 +141,7 @@ def loop_async():
 
 
   # reset and prepare for new run
-  if progress > run_time+stop_time and start_music is False:
+  if progress > (run_time+stop_time) and start_music is False:
     boot_time_offset = current_time
     start_music = True
 
