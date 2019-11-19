@@ -7,12 +7,12 @@ from omxplayer.player import OMXPlayer
 import numpy as np
 
 """CONSTANTS"""
-# GPIO
 motor_vr_pin = 12
 motor_relay_pin = 13
 ssr_pin = 11
 
-# music variables
+
+""" music variables """
 MUSIC_LIB_PATH = '/media/usb'
 last_played_track = None
 stop_music_time = 0
@@ -23,27 +23,26 @@ start_music = True
 playlist_duration = 0
 new_player = True
 track_stop_time = 0
-tracks_to_play = 2
+tracks_to_play = 1
 
-# motor variables
+
+""" motor and speed """
 motor = None
-
-# train speed graph
 MAX_SPEED = 50
-MIN_SPEED = 0
+MIN_SPEED = 10
 BOOT_COEF = 4
 BREAK_COEF = 2
 GRAPH_TRANSITION_THRESHOLD = 5 # between 0 and MAX_SPEED: (MAX_SPEED/2) will eliminate the feature
 
-# managing variable
-OPEN_HOUR = time(8-1, 0, 0) # timezone offset
-CLOSE_HOUR = time(20-1, 0, 0) # timezone offset
-boot_time_offset = 0
-print_time = 0
 
+""" managing variable """
+OPEN_HOUR = time(8, 0, 0)
+CLOSE_HOUR = time(20, 40, 0)
+boot_time_offset = 0
 default_run_time = 30
 run_time = default_run_time
 stop_time = (10 * 60)
+print_time = 0
 
 
 
@@ -70,15 +69,14 @@ def setup():
   boot_time_offset = datetime.timestamp(datetime.now())
   print('found upbeat playlist:\n', get_upbeat_playlist(), '\nand playlist:\n', get_playlist(), '\n')
   print('Ready!')
-  print('date\t\t\t\topen\tprogress\t(run time, stop time)\tspeed\ttracks\tnew music\tnew player\tends at')
-  timer.sleep(1)
+  # timer.sleep(1)
 
 
 def loop_async():
   """main loop that implements a non-blocking strategy"""
   global motor, boot_time_offset, MIN_SPEED, run_time, stop_time, start_music, player, playlist, track_stop_time, new_player, tracks_to_play, default_run_time, print_time
 
-  # time trackers
+  """ time trackers """
   current_date = datetime.now()
   current_time = datetime.timestamp(current_date)
   shop_is_open = is_shop_open(current_date)
@@ -89,10 +87,10 @@ def loop_async():
 
     progress = current_time - boot_time_offset
 
-    # populate playlist
+    """ populate playlist """
     if start_music is True:
       start_music = False
-      new_player = True
+      #new_player = True
       playlist = []
       playlist_duration = default_run_time
       run_time = default_run_time
@@ -105,7 +103,7 @@ def loop_async():
       except:
         print('Could not get playlist!')
 
-    # compute speed
+    """ compute speed """
     speed = speed_graph(progress, duration=run_time)
     if progress < 2:
       speed = 100
@@ -113,11 +111,19 @@ def loop_async():
   else:
     boot_offset_time = current_time
 
-  # if playlist has tracks
+  """ if playlist has tracks """
   if playlist:
     if current_time > track_stop_time:
 
-      # create or reuse player instance
+      """ create or reuse player instance """
+      try:
+        print('Reusing player')
+        player.load(playlist[0])
+      except:
+        print('New player')
+        player = OMXPlayer(playlist[0])
+
+      """
       if new_player is True:
         new_player = False
         try:
@@ -129,56 +135,61 @@ def loop_async():
           player.load(playlist[0])
         except:
           print('Reusing player exception')
+      """
 
-      # next stop
+      """ next stop """
       try:
         track_stop_time = player.duration() + current_time
       except:
         print('Current playing track duration exception')
         track_stop_time = default_run_time + current_time
         run_time = default_run_time
+
       playlist.pop(0)
 
 
-  # reset and prepare for new run
+  """ reset and prepare for new run """
   if progress > (run_time+stop_time) and start_music is False:
     boot_time_offset = current_time
     start_music = True
 
-  GPIO.output(motor_relay_pin, (int(speed) > 0))
+  relay_on = int(speed) > (MIN_SPEED + 2)
+  GPIO.output(motor_relay_pin,relay_on)
   GPIO.output(ssr_pin, shop_is_open)
   motor.ChangeDutyCycle(100-int(speed))
 
   if current_time > print_time:
     print_time = current_time + 2
-    print('{}\t{}\t{:06.02f} ({:03.0f}%)\t({:06.02f}, {:06.02f})\t{:.02f}\t{}\t{}\t\t{}\t\t{:.02f}'.format(current_date, shop_is_open, progress, progress/(run_time+stop_time)*100, run_time, stop_time, speed, len(playlist), start_music, new_player, track_stop_time), end='\n',flush=False)
 
+    print('{}  (shop is {})   |   progress: {:03.0f}, {:03.0f}, {:03.0f} ({:03.0f}%)  speed: {:.02f}  (relay {})   |   tracks left: {}  stop music at: {:.02f}'.format(current_date, ("open" if shop_is_open else "closed"), progress, run_time, stop_time, progress/(run_time+stop_time)*100, speed, "on" if relay_on else "off", len(playlist), track_stop_time), end='\n',flush=False)
 
 
 
 def speed_graph(progress, duration):
   """computes a speed graph from the given progress and duration times"""
-  global MAX_SPEED, GRAPH_TRANSITION_THRESHOLD, BOOT_COEF, BREAK_COEF
+  global MAX_SPEED, MIN_SPEED, GRAPH_TRANSITION_THRESHOLD, BOOT_COEF, BREAK_COEF
 
-  # lower bounds (pick largest number)
+  SPEED = MAX_SPEED - MIN_SPEED
+
+  """ lower bounds (pick largest number) """
   progress = max(0, progress)
   duration = max(30, duration)
 
-  # shared computations
-  numerator = math.log( (MAX_SPEED / GRAPH_TRANSITION_THRESHOLD) - 1)
+  """ shared computations """
+  numerator = math.log( (SPEED / GRAPH_TRANSITION_THRESHOLD) - 1)
 
-  # boot graph
+  """ boot graph """
   boot_graph_offset = (numerator / math.log(BOOT_COEF))
-  boot_vector = MAX_SPEED / (1 + BOOT_COEF**(-progress + boot_graph_offset))
+  boot_vector = SPEED / (1 + BOOT_COEF**(-progress + boot_graph_offset))
 
-  # break graph
+  """ break graph """
   break_graph_offset = (numerator / math.log(BREAK_COEF)) - duration
-  break_vector = MAX_SPEED / (1 + BREAK_COEF**(progress + break_graph_offset))
+  break_vector = SPEED / (1 + BREAK_COEF**(progress + break_graph_offset))
 
-  # compute final speed vector
-  speed_vector = boot_vector + break_vector - MAX_SPEED
+  """ compute final speed vector """
+  speed_vector = boot_vector + break_vector - SPEED + MIN_SPEED
 
-  # constrain and return
+  """ constrain and return """
   return min(100, max(0, speed_vector))
 
 
@@ -212,21 +223,22 @@ def get_upbeat_playlist():
 
 def get_upbeat_track():
   """returns path to a random upbeat track"""
-  upbeat_tracks = get_upbeat_playlist()
-  if not upbeat_tracks:
-    return None
-  return random.choice(upbeat_tracks)
+  try:
+    upbeat_tracks = get_upbeat_playlist()
+    return random.choice(upbeat_tracks)
+  except:
+    return []
 
 
 def get_new_track():
   """returns a new track, that was not the previous"""
   global last_played_track
 
-  # get playliste and pick track
+  """ get playliste and pick track """
   playlist = get_playlist()
   track = random.choice(playlist)
 
-  # exclude last played track, if others are available
+  """ exclude last played track, if others are available """
   if len(playlist) > 1 and last_played_track != None:
     while last_played_track == track:
       track = random.choice(playlist)
