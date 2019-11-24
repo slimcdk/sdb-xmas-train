@@ -23,7 +23,7 @@ start_music = True
 playlist_duration = 0
 new_player = True
 track_stop_time = 0
-tracks_to_play = 1
+tracks_to_play = 2
 
 
 """ motor and speed """
@@ -37,7 +37,7 @@ GRAPH_TRANSITION_THRESHOLD = 5 # between 0 and MAX_SPEED: (MAX_SPEED/2) will eli
 
 """ managing variable """
 OPEN_HOUR = time(8, 0, 0)
-CLOSE_HOUR = time(20, 40, 0)
+CLOSE_HOUR = time(20, 0, 0)
 boot_time_offset = 0
 default_run_time = 30
 run_time = default_run_time
@@ -103,11 +103,6 @@ def loop_async():
       except:
         print('Could not get playlist!')
 
-    """ compute speed """
-    speed = speed_graph(progress, duration=run_time)
-    if progress < 2:
-      speed = 100
-
   else:
     boot_offset_time = current_time
 
@@ -122,20 +117,6 @@ def loop_async():
       except:
         print('New player')
         player = OMXPlayer(playlist[0])
-
-      """
-      if new_player is True:
-        new_player = False
-        try:
-          player = OMXPlayer(playlist[0])
-        except:
-          print('Creating new player exception')
-      else:
-        try:
-          player.load(playlist[0])
-        except:
-          print('Reusing player exception')
-      """
 
       """ next stop """
       try:
@@ -152,6 +133,11 @@ def loop_async():
   if progress > (run_time+stop_time) and start_music is False:
     boot_time_offset = current_time
     start_music = True
+
+  """ compute speed """
+  speed = speed_graph(progress, duration=run_time)
+  if progress < 2:
+    speed = 100
 
   relay_on = int(speed) > (MIN_SPEED + 2)
   GPIO.output(motor_relay_pin,relay_on)
