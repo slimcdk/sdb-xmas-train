@@ -23,7 +23,7 @@ start_music = True
 playlist_duration = 0
 new_player = True
 track_stop_time = 0
-tracks_to_play = 1
+tracks_to_play = 2
 
 
 """ motor and speed """
@@ -37,7 +37,7 @@ GRAPH_TRANSITION_THRESHOLD = 5 # between 0 and MAX_SPEED: (MAX_SPEED/2) will eli
 
 """ managing variable """
 OPEN_HOUR = time(8, 0, 0)
-CLOSE_HOUR = time(20, 40, 0)
+CLOSE_HOUR = time(20, 0, 0)
 boot_time_offset = 0
 default_run_time = 30
 run_time = default_run_time
@@ -103,10 +103,6 @@ def loop_async():
       except:
         print('Could not get playlist!')
 
-    """ compute speed """
-    speed = speed_graph(progress, duration=run_time)
-    if progress < 2:
-      speed = 100
 
   else:
     boot_offset_time = current_time
@@ -123,20 +119,6 @@ def loop_async():
         print('New player')
         player = OMXPlayer(playlist[0])
 
-      """
-      if new_player is True:
-        new_player = False
-        try:
-          player = OMXPlayer(playlist[0])
-        except:
-          print('Creating new player exception')
-      else:
-        try:
-          player.load(playlist[0])
-        except:
-          print('Reusing player exception')
-      """
-
       """ next stop """
       try:
         track_stop_time = player.duration() + current_time
@@ -148,18 +130,27 @@ def loop_async():
       playlist.pop(0)
 
 
+  """ compute speed """
+  speed = speed_graph(progress, duration=run_time)
+  if progress < 2:
+    speed = 100
+
+  if not shop_is_open:
+    speed = 0
+
   """ reset and prepare for new run """
   if progress > (run_time+stop_time) and start_music is False:
     boot_time_offset = current_time
     start_music = True
 
-  relay_on = int(speed) > (MIN_SPEED + 2)
+
+  relay_on = int(speed) > (MIN_SPEED + 2) and shop_is_open
   GPIO.output(motor_relay_pin,relay_on)
   GPIO.output(ssr_pin, shop_is_open)
   motor.ChangeDutyCycle(100-int(speed))
 
   if current_time > print_time:
-    print_time = current_time + 2
+    print_time = current_time + 1
 
     print('{}  (shop is {})   |   progress: {:03.0f}, {:03.0f}, {:03.0f} ({:03.0f}%)  speed: {:.02f}  (relay {})   |   tracks left: {}  stop music at: {:.02f}'.format(current_date, ("open" if shop_is_open else "closed"), progress, run_time, stop_time, progress/(run_time+stop_time)*100, speed, "on" if relay_on else "off", len(playlist), track_stop_time), end='\n',flush=False)
 
