@@ -38,3 +38,6 @@ for track in playlist:
 
   except:
     print('failed to normalize track', track)
+
+print ('normalizer finished')
+exit()

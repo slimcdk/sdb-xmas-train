@@ -4,7 +4,6 @@ from glob import glob
 import RPi.GPIO as GPIO
 from mutagen.mp3 import MP3
 from omxplayer.player import OMXPlayer
-from pydub import AudioSegment
 import numpy as np
 
 """CONSTANTS"""
@@ -67,6 +66,7 @@ def setup():
 
   if os.path.exists(os.path.join(MUSIC_LIB_PATH, 'normalized_tracks')):
     MUSIC_LIB_PATH = os.path.join(MUSIC_LIB_PATH, 'normalized_tracks')
+    print('Found normalized tracks directory')
 
   current_date = datetime.now()
   current_time = datetime.timestamp(current_date)
