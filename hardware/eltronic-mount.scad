@@ -15,16 +15,16 @@ difference() {
         linear_extrude(base_thickness) square(size=[110,170]);
         
         difference() {
-            translate([123,170/2,0]) rotate([0,0,90]) union() {
-                translate([-71,0,0]) linear_extrude(base_thickness) circle(r=14, $fn=fn);
-                translate([-71,14/2,0]) linear_extrude(base_thickness) square(size=[28,14], center=true);
+            translate([123,170/2+10,0]) rotate([0,0,90]) union() {
+                translate([-81,14,0]) linear_extrude(base_thickness) circle(r=14, $fn=fn);
+                *translate([-71,14/2,0]) linear_extrude(base_thickness) square(size=[20,14], center=true);
                 
-                translate([71,0,0]) linear_extrude(base_thickness) circle(r=14, $fn=fn);
-                translate([71,14/2,0]) linear_extrude(base_thickness) square(size=[28,14], center=true);            
+                translate([61,14,0]) linear_extrude(base_thickness) circle(r=14, $fn=fn);
+                *translate([71,14/2,0]) linear_extrude(base_thickness) square(size=[20,14], center=true);            
             }
         }
     }
-    translate([124,170/2,0]) rotate([0,0,90]) union() {
+    translate([124-10,170/2,0]) rotate([0,0,90]) union() {
 
         translate([-71,0,0]) linear_extrude(base_thickness+1) circle(d=4, $fn=fn);
         translate([71,0,0]) linear_extrude(base_thickness+1) circle(d=4, $fn=fn);
@@ -76,7 +76,7 @@ translate([28, 56, base_thickness]) rotate([0,0,-90]) union () {
 }
 
 // buck converter
-translate([80, 110, base_thickness]) rotate([0,0,0]) union () {
+translate([80, 125, base_thickness]) rotate([0,0,0]) union () {
     
     
     // standoffs
