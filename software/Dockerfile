@@ -1,9 +1,7 @@
 FROM balenalib/rpi-raspbian
 
-
 RUN apt-get update -y
 RUN apt-get -y install libatlas3-base ffmpeg
-#libdbus-1{,-dev}
 RUN apt-get -y install omxplayer python3.7 python3-pip python3-numpy
 
 # install Python modules

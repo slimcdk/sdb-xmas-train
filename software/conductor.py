@@ -1,21 +1,24 @@
-import os, random, math, time as timer
-from datetime import datetime, timedelta, time
-from glob import glob
+import os, random, time as timer
 import RPi.GPIO as GPIO
-from mutagen.mp3 import MP3
-from omxplayer.player import OMXPlayer
 import numpy as np
 
-"""CONSTANTS"""
+from datetime import datetime, time
+from glob import glob
+from mutagen.mp3 import MP3
+from omxplayer.player import OMXPlayer
+
+
 motor_vr_pin = 12
 motor_relay_pin = 13
 ssr_pin = 11
 
 
-""" music variables """
-MUSIC_LIB_PATH = '/media/usb'
+# music variables
+MUSIC_LIB_DIR = '/media/usb'
+NORMALIZED_LIB_DIR = 'normalized_tracks'
+
+
 last_played_track = None
-stop_music_time = 0
 player = None
 playlist = []
 run_music = False
@@ -25,7 +28,7 @@ track_stop_time = 0
 tracks_to_play = 2
 
 
-""" motor and speed """
+# motor and speed
 motor = None
 MAX_SPEED = 50
 MIN_SPEED = 10
@@ -34,24 +37,25 @@ BREAK_COEF = 2
 GRAPH_TRANSITION_THRESHOLD = 5 # between 0 and MAX_SPEED: (MAX_SPEED/2) will eliminate the feature
 
 
-""" managing variable """
+# managing variables
 OPEN_HOUR = time(8, 0, 0)
 CLOSE_HOUR = time(20, 0, 0)
 progress_start_time = 0
 default_run_time = 40
 run_time = default_run_time
 stop_time = (10 * 60)
-print_time = 0
 progress = 0
+print_time = 0
+do_print = False
 
 
 def setup():
   """program initialization"""
+  global motor, motor_vr_pin, progress_start_time, MUSIC_LIB_DIR
+
   print('Choo! Choo! The train is booting..')
 
-  global motor, motor_vr_pin, progress_start_time, MUSIC_LIB_PATH
-
-  # configure motor IO
+  # configure IO
   GPIO.setmode(GPIO.BOARD)
   GPIO.setwarnings(False)
   GPIO.setup(motor_vr_pin, GPIO.OUT)
@@ -63,10 +67,10 @@ def setup():
 
   motor = GPIO.PWM(motor_vr_pin, 1000)
   motor.start(100-0)
-
-  if os.path.exists(os.path.join(MUSIC_LIB_PATH, 'normalized_tracks')):
-    MUSIC_LIB_PATH = os.path.join(MUSIC_LIB_PATH, 'normalized_tracks')
-    print('Found normalized tracks directory')
+  
+  if os.path.exists(os.path.join(MUSIC_LIB_DIR, NORMALIZED_LIB_DIR)):
+    MUSIC_LIB_DIR = os.path.join(MUSIC_LIB_DIR, NORMALIZED_LIB_DIR)
+    print('Found normalized tracks directory ->', MUSIC_LIB_DIR)
 
   current_date = datetime.now()
   current_time = datetime.timestamp(current_date)
@@ -78,24 +82,25 @@ def setup():
 
 
 def loop_async():
-  """main loop that implements a non-blocking strategy"""
-  global motor, progress_start_time, MIN_SPEED, run_time, stop_time, new_playlist, player, playlist, track_stop_time, new_player, tracks_to_play, default_run_time, print_time, progress
+  """ main loop that implements a non-blocking strategy """
+  global motor, progress_start_time, MIN_SPEED, run_time, stop_time, new_playlist, player, playlist, track_stop_time, tracks_to_play, default_run_time, print_time, progress, do_print
 
-  """ time trackers """
+  # time trackers
   current_date = datetime.now()
   current_time = datetime.timestamp(current_date)
   shop_is_open = is_shop_open(current_date)
-  progress = 0
-  speed = MIN_SPEED
   progress = current_time - progress_start_time
-
-
+  speed = MIN_SPEED
+  
   if shop_is_open is True:
 
+    # compute speed
+    speed = 100 if progress < 2 else speed_graph(progress, duration=run_time)
 
-    """ populate playlist """
-    if new_playlist is True: # and not playlist:
+    # populate playlist
+    if new_playlist is True:
       new_playlist = False
+      do_print = True
       playlist = []
       playlist_duration = default_run_time
       run_time = default_run_time
@@ -105,25 +110,33 @@ def loop_async():
         playlist += [get_upbeat_track()]
       except:
         print('No upbeat tracks available')
-
       try:
         playlist += get_sub_playlist(tracks_to_play)
       except:
         print('No music tracks available')
 
-      if playlist:
-        playlist_duration = sum(track.info.length for track in [MP3(mp3_file) for mp3_file in playlist])
-        run_time = playlist_duration
 
+      # estimate run duration for this interval
+      if playlist:
+        try:
+          playlist_duration = sum(track.info.length for track in [MP3(mp3_file) for mp3_file in playlist])
+          run_time = playlist_duration
+          print('New run time for this interval')
+        except:
+          run_time = default_run_time
+          print('Default run time for this interval')
+
+  # if shop is not open
   else:
     progress_start_time = current_time
+    speed = 0
 
 
-  """ if playlist has tracks """
+  # drain playlist for tracks
   if playlist:
     if current_time > track_stop_time:
 
-      """ create or reuse player instance """
+      # create or reuse player instance
       try:
         player.load(playlist[0])
         print('Reusing player')
@@ -131,7 +144,7 @@ def loop_async():
         player = OMXPlayer(playlist[0])
         print('New player')
 
-      """ next stop """
+      # next stop
       try:
         track_stop_time = player.duration() + current_time
       except:
@@ -142,26 +155,23 @@ def loop_async():
       playlist.pop(0)
 
 
-  """ compute speed """
-  speed = speed_graph(progress, duration=run_time)
-  if progress < 2:
-    speed = 100
-
-  if not shop_is_open:
-    speed = 0
-
-  """ reset and prepare for new run """
+  # reset and prepare for new run
   if progress > (run_time+stop_time) and new_playlist is False:
     progress_start_time = current_time
     new_playlist = True
+    do_print = True
 
+  # write IO
   relay_on = int(speed) > (MIN_SPEED + 0.5) and shop_is_open
   GPIO.output(motor_relay_pin, relay_on)
   GPIO.output(ssr_pin, shop_is_open)
   motor.ChangeDutyCycle(100-int(speed))
 
-  if current_time > print_time:
+
+  # print stuff
+  if current_time > print_time or do_print is True:
     print_time = current_time + 1
+    do_print = False
     print('{}  (shop is {})   |   progress: {:03.0f}, {:03.0f}, {:03.0f} ({:03.0f}%)  speed: {:.02f}  (relay {})   |  stop music at: {:.02f}  playlist: {}'.format(current_date, ("open" if shop_is_open else "closed"), progress, run_time, stop_time, progress/(run_time+stop_time)*100, speed, "on" if relay_on else "off", track_stop_time, [track.split('/')[-1] for track in playlist]), end='\n',flush=False)
 
 
@@ -172,25 +182,25 @@ def speed_graph(progress, duration):
 
   SPEED = MAX_SPEED - MIN_SPEED
 
-  """ lower bounds (pick largest number) """
+  # lower bounds (pick largest number)
   progress = max(0, progress)
   duration = max(30, duration)
 
-  """ shared computations """
+  # shared computations
   numerator = np.log((SPEED / GRAPH_TRANSITION_THRESHOLD) - 1)
 
-  """ boot graph """
+  # boot graph
   boot_graph_offset = (numerator / np.log(BOOT_COEF))
   boot_vector = SPEED / (1 + BOOT_COEF**(-progress + boot_graph_offset))
 
-  """ break graph """
+  # break graph
   break_graph_offset = (numerator / np.log(BREAK_COEF)) - duration
   break_vector = SPEED / (1 + BREAK_COEF**(progress + break_graph_offset))
 
-  """ compute final speed vector """
+  # compute final speed vector
   speed_vector = boot_vector + break_vector - SPEED + MIN_SPEED
 
-  """ constrain and return """
+  # constrain and return
   return min(100, max(0, speed_vector))
 
 
@@ -217,6 +227,7 @@ def get_sub_playlist(tracks_to_play):
 
 
 def get_upbeat_playlist():
+  """ returns a list containing all upbeat tracks """
   playlist = get_full_playlist()
   upbeat_tracks = [track for track in playlist if 'upbeat' in track]
   return upbeat_tracks
@@ -235,18 +246,17 @@ def get_new_track():
   """returns a new track, that was not the previous"""
   global last_played_track
 
-  """ get playliste and pick track """
+  # get playliste and pick track
   playlist = get_playlist()
   track = random.choice(playlist)
 
-  """ exclude last played track, if others are available """
+  # exclude last played track, if others are available
   if len(playlist) > 1 and last_played_track != None:
     while last_played_track == track:
       track = random.choice(playlist)
 
   last_played_track = track
   return track
-
 
 
 def get_playlist():
@@ -257,28 +267,7 @@ def get_playlist():
 
 def get_full_playlist():
   """gets all tracks from the usb"""
-  return glob(os.path.join(MUSIC_LIB_PATH, '*.mp3'))
-
-
-def normalize_playlist_volume(playlist, volume):
-   print('Normalizing {} tracks with {} db'.format(len(playlist), volume))
-   for track in  playlist:
-      track_name = track.replace(MUSIC_LIB_PATH+'/', '')
-      print('Normalizing', track_name)
-      try:
-        sound = AudioSegment.from_file(track, 'mp3')
-        normalized_track = match_target_amplitude(sound, volume)
-        normalized_track.export('{}/normalized_{}.mp3'.format(MUSIC_LIB_PATH, track_name), format='mp3')
-        print('normaliztion succeeded')
-      except:
-        print('failed to normalize track',track_name)
-
-   print('Normalizing finished')
-
-
-def match_target_amplitude(track, target_dBFS):
-  change_in_dBFS = target_dBFS - track.dBFS
-  return track.apply_gain(change_in_dBFS)
+  return glob(os.path.join(MUSIC_LIB_DIR, '*.mp3'))
 
 
 def main():
@@ -305,14 +294,3 @@ def main():
 
 if __name__ == '__main__':
   main()
-
-
-"""
-      try:
-        #playlist = [get_upbeat_track()] + get_sub_playlist(tracks_to_play)
-        playlist_duration = sum(track.info.length for track in [MP3(mp3_file) for mp3_file in playlist])
-        run_time = playlist_duration
-        print('playlist', playlist, 'has length', playlist_duration)
-      except:
-        print('Could not get playlist!')
-"""
