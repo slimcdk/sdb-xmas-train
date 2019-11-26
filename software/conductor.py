@@ -130,6 +130,8 @@ def loop_async():
   else:
     progress_start_time = current_time
     speed = 0
+    if playlist:
+      playlist = []
 
 
   # drain playlist for tracks
