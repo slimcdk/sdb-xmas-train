@@ -162,7 +162,7 @@ def loop_async():
 
   if current_time > print_time:
     print_time = current_time + 1
-    print('{}  (shop is {})   |   progress: {:03.0f}, {:03.0f}, {:03.0f} ({:03.0f}%)  speed: {:.02f}  (relay {})   |  stop music at: {:.02f}  playlist: {}'.format(current_date, ("open" if shop_is_open else "closed"), progress, run_time, stop_time, progress/(run_time+stop_time)*100, speed, "on" if relay_on else "off", track_stop_time, playlist), end='\n',flush=False)
+    print('{}  (shop is {})   |   progress: {:03.0f}, {:03.0f}, {:03.0f} ({:03.0f}%)  speed: {:.02f}  (relay {})   |  stop music at: {:.02f}  playlist: {}'.format(current_date, ("open" if shop_is_open else "closed"), progress, run_time, stop_time, progress/(run_time+stop_time)*100, speed, "on" if relay_on else "off", track_stop_time, [track.split('/')[-1] for track in playlist]), end='\n',flush=False)
 
 
 
