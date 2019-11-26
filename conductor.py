@@ -4,6 +4,7 @@ from glob import glob
 import RPi.GPIO as GPIO
 from mutagen.mp3 import MP3
 from omxplayer.player import OMXPlayer
+from pydub import AudioSegment
 import numpy as np
 
 """CONSTANTS"""
@@ -19,9 +20,8 @@ stop_music_time = 0
 player = None
 playlist = []
 run_music = False
-start_music = True
+new_playlist = True
 playlist_duration = 0
-new_player = True
 track_stop_time = 0
 tracks_to_play = 2
 
@@ -38,20 +38,19 @@ GRAPH_TRANSITION_THRESHOLD = 5 # between 0 and MAX_SPEED: (MAX_SPEED/2) will eli
 """ managing variable """
 OPEN_HOUR = time(8, 0, 0)
 CLOSE_HOUR = time(20, 0, 0)
-boot_time_offset = 0
-default_run_time = 30
+progress_start_time = 0
+default_run_time = 40
 run_time = default_run_time
 stop_time = (10 * 60)
 print_time = 0
-
-
+progress = 0
 
 
 def setup():
   """program initialization"""
   print('Choo! Choo! The train is booting..')
 
-  global motor, motor_vr_pin, boot_time_offset
+  global motor, motor_vr_pin, progress_start_time, MUSIC_LIB_PATH
 
   # configure motor IO
   GPIO.setmode(GPIO.BOARD)
@@ -66,15 +65,21 @@ def setup():
   motor = GPIO.PWM(motor_vr_pin, 1000)
   motor.start(100-0)
 
-  boot_time_offset = datetime.timestamp(datetime.now())
+  if os.path.exists(os.path.join(MUSIC_LIB_PATH, 'normalized_tracks')):
+    MUSIC_LIB_PATH = os.path.join(MUSIC_LIB_PATH, 'normalized_tracks')
+
+  current_date = datetime.now()
+  current_time = datetime.timestamp(current_date)
+  progress_start_time = current_time
+  progress = 0
+
   print('found upbeat playlist:\n', get_upbeat_playlist(), '\nand playlist:\n', get_playlist(), '\n')
   print('Ready!')
-  # timer.sleep(1)
 
 
 def loop_async():
   """main loop that implements a non-blocking strategy"""
-  global motor, boot_time_offset, MIN_SPEED, run_time, stop_time, start_music, player, playlist, track_stop_time, new_player, tracks_to_play, default_run_time, print_time
+  global motor, progress_start_time, MIN_SPEED, run_time, stop_time, new_playlist, player, playlist, track_stop_time, new_player, tracks_to_play, default_run_time, print_time, progress
 
   """ time trackers """
   current_date = datetime.now()
@@ -82,30 +87,37 @@ def loop_async():
   shop_is_open = is_shop_open(current_date)
   progress = 0
   speed = MIN_SPEED
+  progress = current_time - progress_start_time
+
 
   if shop_is_open is True:
 
-    progress = current_time - boot_time_offset
 
     """ populate playlist """
-    if start_music is True:
-      start_music = False
-      #new_player = True
+    if new_playlist is True: # and not playlist:
+      new_playlist = False
       playlist = []
       playlist_duration = default_run_time
       run_time = default_run_time
 
+      # try to populate playlist
       try:
-        playlist = [get_upbeat_track()] + get_sub_playlist(tracks_to_play)
+        playlist += [get_upbeat_track()]
+      except:
+        print('No upbeat tracks available')
+
+      try:
+        playlist += get_sub_playlist(tracks_to_play)
+      except:
+        print('No music tracks available')
+
+      if playlist:
         playlist_duration = sum(track.info.length for track in [MP3(mp3_file) for mp3_file in playlist])
         run_time = playlist_duration
-        print('playlist', playlist, 'has length', playlist_duration)
-      except:
-        print('Could not get playlist!')
-
 
   else:
-    boot_offset_time = current_time
+    progress_start_time = current_time
+
 
   """ if playlist has tracks """
   if playlist:
@@ -113,11 +125,11 @@ def loop_async():
 
       """ create or reuse player instance """
       try:
-        print('Reusing player')
         player.load(playlist[0])
+        print('Reusing player')
       except:
-        print('New player')
         player = OMXPlayer(playlist[0])
+        print('New player')
 
       """ next stop """
       try:
@@ -139,20 +151,18 @@ def loop_async():
     speed = 0
 
   """ reset and prepare for new run """
-  if progress > (run_time+stop_time) and start_music is False:
-    boot_time_offset = current_time
-    start_music = True
+  if progress > (run_time+stop_time) and new_playlist is False:
+    progress_start_time = current_time
+    new_playlist = True
 
-
-  relay_on = int(speed) > (MIN_SPEED + 2) and shop_is_open
-  GPIO.output(motor_relay_pin,relay_on)
+  relay_on = int(speed) > (MIN_SPEED + 0.5) and shop_is_open
+  GPIO.output(motor_relay_pin, relay_on)
   GPIO.output(ssr_pin, shop_is_open)
   motor.ChangeDutyCycle(100-int(speed))
 
   if current_time > print_time:
     print_time = current_time + 1
-
-    print('{}  (shop is {})   |   progress: {:03.0f}, {:03.0f}, {:03.0f} ({:03.0f}%)  speed: {:.02f}  (relay {})   |   tracks left: {}  stop music at: {:.02f}'.format(current_date, ("open" if shop_is_open else "closed"), progress, run_time, stop_time, progress/(run_time+stop_time)*100, speed, "on" if relay_on else "off", len(playlist), track_stop_time), end='\n',flush=False)
+    print('{}  (shop is {})   |   progress: {:03.0f}, {:03.0f}, {:03.0f} ({:03.0f}%)  speed: {:.02f}  (relay {})   |  stop music at: {:.02f}  playlist: {}'.format(current_date, ("open" if shop_is_open else "closed"), progress, run_time, stop_time, progress/(run_time+stop_time)*100, speed, "on" if relay_on else "off", track_stop_time, playlist), end='\n',flush=False)
 
 
 
@@ -167,14 +177,14 @@ def speed_graph(progress, duration):
   duration = max(30, duration)
 
   """ shared computations """
-  numerator = math.log( (SPEED / GRAPH_TRANSITION_THRESHOLD) - 1)
+  numerator = np.log((SPEED / GRAPH_TRANSITION_THRESHOLD) - 1)
 
   """ boot graph """
-  boot_graph_offset = (numerator / math.log(BOOT_COEF))
+  boot_graph_offset = (numerator / np.log(BOOT_COEF))
   boot_vector = SPEED / (1 + BOOT_COEF**(-progress + boot_graph_offset))
 
   """ break graph """
-  break_graph_offset = (numerator / math.log(BREAK_COEF)) - duration
+  break_graph_offset = (numerator / np.log(BREAK_COEF)) - duration
   break_vector = SPEED / (1 + BREAK_COEF**(progress + break_graph_offset))
 
   """ compute final speed vector """
@@ -250,6 +260,26 @@ def get_full_playlist():
   return glob(os.path.join(MUSIC_LIB_PATH, '*.mp3'))
 
 
+def normalize_playlist_volume(playlist, volume):
+   print('Normalizing {} tracks with {} db'.format(len(playlist), volume))
+   for track in  playlist:
+      track_name = track.replace(MUSIC_LIB_PATH+'/', '')
+      print('Normalizing', track_name)
+      try:
+        sound = AudioSegment.from_file(track, 'mp3')
+        normalized_track = match_target_amplitude(sound, volume)
+        normalized_track.export('{}/normalized_{}.mp3'.format(MUSIC_LIB_PATH, track_name), format='mp3')
+        print('normaliztion succeeded')
+      except:
+        print('failed to normalize track',track_name)
+
+   print('Normalizing finished')
+
+
+def match_target_amplitude(track, target_dBFS):
+  change_in_dBFS = target_dBFS - track.dBFS
+  return track.apply_gain(change_in_dBFS)
+
 
 def main():
   global player, motor
@@ -276,3 +306,13 @@ def main():
 if __name__ == '__main__':
   main()
 
+
+"""
+      try:
+        #playlist = [get_upbeat_track()] + get_sub_playlist(tracks_to_play)
+        playlist_duration = sum(track.info.length for track in [MP3(mp3_file) for mp3_file in playlist])
+        run_time = playlist_duration
+        print('playlist', playlist, 'has length', playlist_duration)
+      except:
+        print('Could not get playlist!')
+"""

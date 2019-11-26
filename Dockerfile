@@ -2,11 +2,12 @@ FROM balenalib/rpi-raspbian
 
 
 RUN apt-get update -y
-RUN apt-get -y install libatlas3-base
+RUN apt-get -y install libatlas3-base ffmpeg
+#libdbus-1{,-dev}
 RUN apt-get -y install omxplayer python3.7 python3-pip python3-numpy
 
 # install Python modules
-RUN pip3 install -U omxplayer-wrapper RPI.GPIO mutagen
+RUN pip3 install -U omxplayer-wrapper RPI.GPIO mutagen pydub
 
 
 COPY conductor.py /sdb-train/conductor.py
