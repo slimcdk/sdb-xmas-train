@@ -38,8 +38,8 @@ GRAPH_TRANSITION_THRESHOLD = 5 # between 0 and MAX_SPEED: (MAX_SPEED/2) will eli
 
 
 # managing variables
-OPEN_HOUR = time(20, 0, 0)
-CLOSE_HOUR = time(8, 0, 0)
+OPEN_HOUR = time(8, 0, 0)
+CLOSE_HOUR = time(20, 0, 0)
 progress_start_time = 0
 default_run_time = 40
 run_time = default_run_time
