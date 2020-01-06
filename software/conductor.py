@@ -67,7 +67,7 @@ def setup():
 
   motor = GPIO.PWM(motor_vr_pin, 1000)
   motor.start(100-0)
-  
+
   if os.path.exists(os.path.join(MUSIC_LIB_DIR, NORMALIZED_LIB_DIR)):
     MUSIC_LIB_DIR = os.path.join(MUSIC_LIB_DIR, NORMALIZED_LIB_DIR)
     print('Found normalized tracks directory ->', MUSIC_LIB_DIR)
@@ -91,7 +91,7 @@ def loop_async():
   shop_is_open = is_shop_open(current_date)
   progress = current_time - progress_start_time
   speed = MIN_SPEED
-  
+
   if shop_is_open is True:
 
     # compute speed
@@ -131,6 +131,7 @@ def loop_async():
     progress_start_time = current_time
     speed = 0
     if playlist:
+      print('Erasing remaing songs from playlist, due to closed shop')
       playlist = []
 
 
