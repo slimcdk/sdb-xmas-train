@@ -1,0 +1,241 @@
+EESchema Schematic File Version 4
+LIBS:motherboard-cache
+EELAYER 30 0
+EELAYER END
+$Descr A4 11693 8268
+encoding utf-8
+Sheet 1 1
+Title ""
+Date ""
+Rev ""
+Comp ""
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+$Comp
+L Connector:Raspberry_Pi_2_3 J1
+U 1 1 5E12F75F
+P 7000 2650
+F 0 "J1" H 7700 4200 50  0000 C CNN
+F 1 "Raspberry_Pi_2_3" H 7700 4050 50  0000 C CNN
+F 2 "" H 7000 2650 50  0001 C CNN
+F 3 "https://www.raspberrypi.org/documentation/hardware/raspberrypi/schematics/rpi_SCH_3bplus_1p0_reduced.pdf" H 7000 2650 50  0001 C CNN
+	1    7000 2650
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+12V #PWR0101
+U 1 1 5E1339DC
+P 2950 1200
+F 0 "#PWR0101" H 2950 1050 50  0001 C CNN
+F 1 "+12V" H 2965 1373 50  0000 C CNN
+F 2 "" H 2950 1200 50  0001 C CNN
+F 3 "" H 2950 1200 50  0001 C CNN
+	1    2950 1200
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0102
+U 1 1 5E134478
+P 3450 1900
+F 0 "#PWR0102" H 3450 1650 50  0001 C CNN
+F 1 "GND" H 3455 1727 50  0000 C CNN
+F 2 "" H 3450 1900 50  0001 C CNN
+F 3 "" H 3450 1900 50  0001 C CNN
+	1    3450 1900
+	1    0    0    -1  
+$EndComp
+$Comp
+L Modules:XL6009 #M0101
+U 1 1 5E12FDCC
+P 3450 1450
+F 0 "#M0101" H 3450 1765 50  0000 C CNN
+F 1 "XL6009" H 3450 1674 50  0000 C CNN
+F 2 "" H 3450 1800 50  0001 C CNN
+F 3 "" H 3450 1800 50  0001 C CNN
+	1    3450 1450
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3450 1700 3450 1900
+Wire Wire Line
+	2950 1200 2950 1450
+Wire Wire Line
+	2950 1450 3100 1450
+$Comp
+L power:+5V #PWR0103
+U 1 1 5E1396A8
+P 3950 1200
+F 0 "#PWR0103" H 3950 1050 50  0001 C CNN
+F 1 "+5V" H 3965 1373 50  0000 C CNN
+F 2 "" H 3950 1200 50  0001 C CNN
+F 3 "" H 3950 1200 50  0001 C CNN
+	1    3950 1200
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3800 1450 3950 1450
+Wire Wire Line
+	3950 1450 3950 1200
+$Comp
+L power:+5V #PWR0104
+U 1 1 5E140136
+P 6800 1050
+F 0 "#PWR0104" H 6800 900 50  0001 C CNN
+F 1 "+5V" H 6815 1223 50  0000 C CNN
+F 2 "" H 6800 1050 50  0001 C CNN
+F 3 "" H 6800 1050 50  0001 C CNN
+	1    6800 1050
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	6800 1050 6800 1200
+Wire Wire Line
+	6900 1350 6900 1200
+Wire Wire Line
+	6900 1200 6800 1200
+Connection ~ 6800 1200
+Wire Wire Line
+	6800 1200 6800 1350
+$Comp
+L power:+3V3 #PWR0105
+U 1 1 5E143B61
+P 7200 1050
+F 0 "#PWR0105" H 7200 900 50  0001 C CNN
+F 1 "+3V3" H 7215 1223 50  0000 C CNN
+F 2 "" H 7200 1050 50  0001 C CNN
+F 3 "" H 7200 1050 50  0001 C CNN
+	1    7200 1050
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	7200 1050 7200 1200
+Wire Wire Line
+	7100 1350 7100 1200
+Wire Wire Line
+	7100 1200 7200 1200
+Connection ~ 7200 1200
+Wire Wire Line
+	7200 1200 7200 1350
+$Comp
+L power:GND #PWR0106
+U 1 1 5E147749
+P 6600 4200
+F 0 "#PWR0106" H 6600 3950 50  0001 C CNN
+F 1 "GND" H 6605 4027 50  0000 C CNN
+F 2 "" H 6600 4200 50  0001 C CNN
+F 3 "" H 6600 4200 50  0001 C CNN
+	1    6600 4200
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	6600 3950 6600 4050
+Wire Wire Line
+	6700 3950 6700 4050
+Wire Wire Line
+	6700 4050 6600 4050
+Connection ~ 6600 4050
+Wire Wire Line
+	6600 4050 6600 4200
+Wire Wire Line
+	6700 4050 6800 4050
+Wire Wire Line
+	6800 4050 6800 3950
+Connection ~ 6700 4050
+Wire Wire Line
+	6800 4050 6900 4050
+Wire Wire Line
+	6900 4050 6900 3950
+Connection ~ 6800 4050
+Wire Wire Line
+	6900 4050 7000 4050
+Wire Wire Line
+	7000 4050 7000 3950
+Connection ~ 6900 4050
+Wire Wire Line
+	7000 4050 7100 4050
+Wire Wire Line
+	7100 4050 7100 3950
+Connection ~ 7000 4050
+Wire Wire Line
+	7100 4050 7200 4050
+Wire Wire Line
+	7200 4050 7200 3950
+Connection ~ 7100 4050
+Wire Wire Line
+	7200 4050 7300 4050
+Wire Wire Line
+	7300 4050 7300 3950
+Connection ~ 7200 4050
+$Comp
+L Connector:Screw_Terminal_01x02 J?
+U 1 1 5E1536C1
+P 1750 1550
+F 0 "J?" H 2450 1600 50  0000 C CNN
+F 1 "Screw_Terminal_01x02" H 2100 1700 50  0000 C CNN
+F 2 "" H 1750 1550 50  0001 C CNN
+F 3 "~" H 1750 1550 50  0001 C CNN
+	1    1750 1550
+	-1   0    0    1   
+$EndComp
+$Comp
+L power:+12V #PWR?
+U 1 1 5E15AED0
+P 2100 1250
+F 0 "#PWR?" H 2100 1100 50  0001 C CNN
+F 1 "+12V" H 2115 1423 50  0000 C CNN
+F 2 "" H 2100 1250 50  0001 C CNN
+F 3 "" H 2100 1250 50  0001 C CNN
+	1    2100 1250
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	1950 1450 2100 1450
+Wire Wire Line
+	2100 1450 2100 1250
+$Comp
+L power:GND #PWR?
+U 1 1 5E15E7E1
+P 2100 1750
+F 0 "#PWR?" H 2100 1500 50  0001 C CNN
+F 1 "GND" H 2105 1577 50  0000 C CNN
+F 2 "" H 2100 1750 50  0001 C CNN
+F 3 "" H 2100 1750 50  0001 C CNN
+	1    2100 1750
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	1950 1550 2100 1550
+Wire Wire Line
+	2100 1550 2100 1750
+Text Notes 1000 1350 0    50   ~ 0
+12V POWER INPUT
+Text Notes 1000 2450 0    50   ~ 0
+SPEAKER OUTPUTS
+$Comp
+L Connector:Screw_Terminal_01x02 J?
+U 1 1 5E16C364
+P 1750 3950
+F 0 "J?" H 2450 4000 50  0000 C CNN
+F 1 "Screw_Terminal_01x02" H 2100 4100 50  0000 C CNN
+F 2 "" H 1750 3950 50  0001 C CNN
+F 3 "~" H 1750 3950 50  0001 C CNN
+	1    1750 3950
+	-1   0    0    1   
+$EndComp
+$Comp
+L Connector:Screw_Terminal_01x04 J?
+U 1 1 5E1769C1
+P 1750 2800
+F 0 "J?" H 2150 2900 50  0000 C CNN
+F 1 "Screw_Terminal_01x04" H 2100 3050 50  0000 C CNN
+F 2 "" H 1750 2800 50  0001 C CNN
+F 3 "~" H 1750 2800 50  0001 C CNN
+	1    1750 2800
+	-1   0    0    1   
+$EndComp
+Text Notes 1000 3700 0    50   ~ 0
+SSR RELAY SIGNAL
+$EndSCHEMATC
