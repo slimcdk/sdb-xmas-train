@@ -1,0 +1,22 @@
+version: '2'
+
+
+volumes:
+  train-config: {}
+
+
+services:
+
+  conductor:
+    build: ./conductor
+    container_name: conductor
+    privileged: true
+    volumes:
+#      - /etc/localtime:/etc/localtime:ro
+      - train-config:/config:ro
+    labels:
+      io.balena.features.supervisor-api: '1'
+      io.balena.features.balena-api: '1'
+    restart: unless-stopped
+
+
