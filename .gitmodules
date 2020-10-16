@@ -1,3 +1,0 @@
-[submodule "electronic/libs/kicad-modules"]
-	path = electronic/libs/kicad-modules
-	url = git@github.com:slimcdk/kicad-modules.git
