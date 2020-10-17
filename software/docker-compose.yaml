@@ -3,20 +3,51 @@ version: '2'
 
 volumes:
   train-config: {}
+  normalized_music: {}
 
 
 services:
+
+  rtc:
+    build: ./rtc_module
+    container_name: rtc_module
+    privileged: true
+    labels:
+      io.balena.features.kernel-modules: '1'
+      io.balena.features.firmware: '1'
+      io.balena.features.dbus: '1'
+      io.balena.features.sysfs: '1'
+      io.balena.features.procfs: '1'
+    restart: 'no'
 
   conductor:
     build: ./conductor
     container_name: conductor
     privileged: true
     volumes:
-#      - /etc/localtime:/etc/localtime:ro
       - train-config:/config:ro
+      - normalized_music:/music_vault
     labels:
       io.balena.features.supervisor-api: '1'
       io.balena.features.balena-api: '1'
+    depends_on:
+      - rtc
     restart: unless-stopped
 
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    restart: unless-stopped
+    depends_on:
+      - conductor
 
+  normalizer:
+    build: ./sound_normalizer
+    container_name: normalizer
+    privileged: true
+    volumes:
+      - normalized_music:/music_vault
+    labels:
+      io.balena.features.supervisor-api: '1'
+      io.balena.features.balena-api: '1'
+    restart: 'no'

@@ -1,6 +1,4 @@
 FROM  balenalib/rpi-raspbian:latest
-#FROM balenalib/raspberrypi4-64-debian:latest
-#FROM balenalib/raspberrypi4-64-debian-python:latest
 
 WORKDIR /conductor
 COPY . .
@@ -21,4 +19,4 @@ RUN [ "cross-build-end" ]
 
 ENV UDEV=1
 
-CMD ["python3", "./conductor.py"]
+CMD python3 ./conductor.py

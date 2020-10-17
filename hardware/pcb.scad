@@ -30,8 +30,8 @@ module motor_esc() {
 
 
 module audio_amp() {
-    hl=48/2;
-    hw=27.5/2;
+    hl=48.5/2;
+    hw=28/2;
     for (p=[[hl,hw], [hl,-hw], [-hl,-hw], [-hl,hw]]) translate(p) circle(d=3);
     square([hl*2-6, hw*2+3], true);
 }
