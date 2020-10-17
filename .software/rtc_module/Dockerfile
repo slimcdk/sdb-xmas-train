@@ -1,0 +1,8 @@
+#FROM  balenalib/rpi-raspbian:latest
+FROM balenalib/raspberrypi4-64-alpine:latest
+
+CMD /bin/bash -c "echo ds1307 0x68 | tee /sys/class/i2c-adapter/i2c-1/new_device && sleep infinity"
+
+
+# https://www.balena.io/docs/reference/OS/time/
+# https://forums.balena.io/t/enable-non-standard-i2c-rtc-module-ds3231-on-rpi-4/119406

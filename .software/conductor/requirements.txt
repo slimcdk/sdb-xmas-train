@@ -1,0 +1,3 @@
+omxplayer-wrapper
+RPI.GPIO
+mutagen
