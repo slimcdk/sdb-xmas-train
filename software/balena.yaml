@@ -1,4 +1,0 @@
-applicationEnvironmentVariables:
-  - TZ: 'Europe/Copenhagen'
-  - TIMEZONE: 'Europe/Copenhagen'
-  
