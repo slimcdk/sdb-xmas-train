@@ -1,7 +1,6 @@
-FROM  balenalib/rpi-raspbian:latest
+#FROM  balenalib/rpi-raspbian:latest
+FROM balenalib/raspberrypi4-64-alpine:latest
 
-
-# modprobe i2c-dev && 
 CMD /bin/bash -c "echo ds1307 0x68 | tee /sys/class/i2c-adapter/i2c-1/new_device && sleep infinity"
 
 

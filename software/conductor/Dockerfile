@@ -1,7 +1,8 @@
+#FROM balenalib/raspberrypi4-64-alpine-python:3-latest
 FROM  balenalib/rpi-raspbian:latest
 
-WORKDIR /conductor
-COPY . .
+WORKDIR /app
+COPY requirements.txt .
 
 RUN [ "cross-build-start" ]
 RUN install_packages \
@@ -13,10 +14,13 @@ RUN install_packages \
     ffmpeg \
     omxplayer
     
-RUN pip3 install --no-cache-dir -r requirements.txt
+RUN pip3 install -r requirements.txt
 RUN [ "cross-build-end" ]
 
 
 ENV UDEV=1
 
-CMD python3 ./conductor.py
+COPY . .
+
+# App
+CMD python3 conductor.py
