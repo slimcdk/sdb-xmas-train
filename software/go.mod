@@ -1,4 +1,4 @@
-module github.com/slimcdk/sdb-xmas-train/conductor
+module github/slimcdk/sdb-xmas-train
 
 go 1.13
 

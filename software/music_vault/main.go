@@ -4,7 +4,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/slimcdk/sdb-xmas-train/conductor/pkg/musician"
+	"github.com/slimcdk/sdb-xmas-train/pkg/musician"
 )
 
 var (
