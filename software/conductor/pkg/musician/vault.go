@@ -5,15 +5,9 @@ import (
 	"strings"
 )
 
-// Vault TODO
-type Vault struct {
-	Directory string
-	Formats   []string
-}
-
 // GetVaultDirectory returns the absolute directory of the music vault
-func (v *Vault) GetVaultDirectory() (string, error) {
-	path, err := filepath.Abs(v.Directory)
+func (m *Musician) GetVaultDirectory() (string, error) {
+	path, err := filepath.Abs(m.Directory)
 	if err != nil {
 		return "", err
 	}
@@ -21,16 +15,16 @@ func (v *Vault) GetVaultDirectory() (string, error) {
 }
 
 // GetFullPlaylist returns the path of every track in the dir
-func (v *Vault) GetFullPlaylist() ([]string, error) {
-	path, err := v.GetVaultDirectory()
+func (m *Musician) GetFullPlaylist() ([]string, error) {
+	path, err := m.GetVaultDirectory()
 
 	if err != nil {
 		return nil, err
 	}
 
 	path += "/*"
-	if len(v.Formats) > 0 {
-		path += "[" + strings.Join(v.Formats, ",") + "]"
+	if len(m.Formats) > 0 {
+		path += "[" + strings.Join(m.Formats, ",") + "]"
 	}
 
 	tracks, err := filepath.Glob(path)
@@ -42,10 +36,10 @@ func (v *Vault) GetFullPlaylist() ([]string, error) {
 }
 
 // GetTracks returns n number of tracks. Tracks are duplicated if n is greater than the absolute number of tracks
-func (v *Vault) GetTracks(n int) ([]string, error) {
+func (m *Musician) GetTracks(n int) ([]string, error) {
 
 	var tracks []string
-	playlist, err := v.GetFullPlaylist()
+	playlist, err := m.GetFullPlaylist()
 	if err != nil {
 		return playlist, err
 	}
@@ -61,4 +55,16 @@ func (v *Vault) GetTracks(n int) ([]string, error) {
 	}
 
 	return tracks[:n], nil
+}
+
+// NewPlaylistQueue TODO
+func (m *Musician) NewPlaylistQueue(n int) ([]string, int, error) {
+	playlist, err := m.GetTracks(n)
+	if err != nil {
+		return nil, -1, err
+	}
+
+	m.playlistQueue = playlist
+	length := 0
+	return playlist, length, nil
 }

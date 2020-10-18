@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/jleight/omxplayer"
-	"github.com/slimcdk/sdb-xmas-train/pkg/musician"
+	"github.com/slimcdk/sdb-xmas-train/conductor/pkg/musician"
 )
 
 var (
@@ -28,7 +28,7 @@ var (
 	*/
 
 	// Music related
-	music                  = musician.Vault{Directory: os.Getenv("MUSIC_PATH"), Formats: []string{}}
+	music                  = musician.Musician{Directory: os.Getenv("MUSIC_PATH"), Formats: []string{}}
 	tracksToPlay           = 2
 	currentPlayList        = []string{}
 	currentPlayListDuation = 0
