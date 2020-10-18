@@ -3,15 +3,19 @@ package main
 import (
 	"log"
 	"os"
+	"sync"
 	"time"
 
+	"github.com/jleight/omxplayer"
 	"github.com/slimcdk/sdb-xmas-train/pkg/musician"
 )
 
 var (
+	wg sync.WaitGroup
+
 	shop = Shop{
-		openClock:  Clock{hour: 1, minute: 1, second: 0},
-		closeClock: Clock{hour: 1, minute: 2, second: 0},
+		openClock:  Clock{hour: 8, minute: 0, second: 0},
+		closeClock: Clock{hour: 20, minute: 0, second: 0},
 	}
 
 	// Motor control related
@@ -24,7 +28,7 @@ var (
 	*/
 
 	// Music related
-	music                  = musician.Vault{Directory: os.Getenv("MUSIC_PATH"), Formats: []string{".go", ".mod"}}
+	music                  = musician.Vault{Directory: os.Getenv("MUSIC_PATH"), Formats: []string{}}
 	tracksToPlay           = 2
 	currentPlayList        = []string{}
 	currentPlayListDuation = 0
@@ -43,23 +47,29 @@ func main() {
 		panic(err)
 	}
 	*/
+	omxplayer.SetUser("root", "/root")
 
 	// Run main logic
-	var err error = nil
-	for err == nil {
-		err = loop()
-	}
+	wg.Add(1)
+	go func() {
+		var err error = nil
+		for err == nil {
+			err = loop()
+		}
+	}()
+	wg.Wait()
 
 	/*
 		if err := motor.Close(); err != nil {
 			panic(err)
 		}
 	*/
+	os.Exit(0)
 }
 
 func loop() error {
 	currentTime := time.Now()
-	shopIsOpen, _ := shop.IsOpenIfClock(currentTime.Clock())
+	shopIsOpen := shop.IsOpenIfClock(currentTime.Clock())
 
 	if shopIsOpen {
 		// Set lights
@@ -83,7 +93,8 @@ func loop() error {
 	if logChanges {
 		logChanges = false
 		go func() {
-			log.Printf("\t%s\tshop is %s\t", currentTime.Format("15:04:05"), shopStates[b2i(shopIsOpen)])
+			pl, _ := music.GetFullPlaylist()
+			log.Printf("\t%s\tshop is %s\t%d songs in playlist", currentTime.Format("15:04:05"), shopStates[b2i(shopIsOpen)], len(pl))
 			time.Sleep(time.Second)
 			logChanges = true
 		}()

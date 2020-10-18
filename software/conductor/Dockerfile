@@ -1,17 +1,24 @@
 FROM  balenalib/rpi-raspbian:latest
 
+ENV UDEV=1
+
+
 WORKDIR /app
+COPY . .
+
 
 RUN [ "cross-build-start" ]
 RUN install_packages \
     build-essential \
-    golang
+    git \
+    wget \
+    golang \
+    omxplayer
+
+RUN go mod download
+#RUN go test
+RUN go build
 
 RUN [ "cross-build-end" ]
 
-
-ENV UDEV=1
-
-COPY . .
-
-CMD go run .
+CMD ./sdb-xmas-train

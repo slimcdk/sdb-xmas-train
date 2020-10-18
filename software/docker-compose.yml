@@ -1,0 +1,49 @@
+version: '2'
+
+
+volumes:
+  train-config: {}
+  music: {}
+
+
+services:
+
+  rtc:
+    build: ./rtc
+    container_name: rtc
+    privileged: true
+    labels:
+      io.balena.features.kernel-modules: '1'
+      io.balena.features.firmware: '1'
+      io.balena.features.dbus: '1'
+      io.balena.features.sysfs: '1'
+      io.balena.features.procfs: '1'
+    restart: 'no'
+
+
+  conductor:
+    build: ./conductor
+    container_name: conductor
+    privileged: true
+    volumes:
+      - train-config:/config:ro
+      - music:/music
+    labels:
+      io.balena.update.strategy: download-then-kill
+      io.balena.features.supervisor-api: '1'
+      io.balena.features.balena-api: '1'
+    depends_on:
+      - rtc
+    restart: unless-stopped
+
+
+  music_vault:
+    build: ./music_vault
+    container_name: music_vault
+    privileged: true
+    volumes:
+      - music:/music
+    labels:
+      io.balena.features.supervisor-api: '1'
+      io.balena.features.balena-api: '1'
+    restart: 'no'

@@ -1,15 +1,14 @@
 package musician
 
 import (
-	"strings"
 	"path/filepath"
+	"strings"
 )
-
 
 // Vault TODO
 type Vault struct {
 	Directory string
-	Formats []string
+	Formats   []string
 }
 
 // GetVaultDirectory returns the absolute directory of the music vault
@@ -24,15 +23,16 @@ func (v *Vault) GetVaultDirectory() (string, error) {
 // GetFullPlaylist returns the path of every track in the dir
 func (v *Vault) GetFullPlaylist() ([]string, error) {
 	path, err := v.GetVaultDirectory()
+
 	if err != nil {
 		return nil, err
 	}
 
 	path += "/*"
 	if len(v.Formats) > 0 {
-		path += "[" + strings.Join(v.Formats, ",")  + "]"
+		path += "[" + strings.Join(v.Formats, ",") + "]"
 	}
-	
+
 	tracks, err := filepath.Glob(path)
 	if err != nil {
 		return nil, err
@@ -41,9 +41,8 @@ func (v *Vault) GetFullPlaylist() ([]string, error) {
 	return tracks, nil
 }
 
-
 // GetTracks returns n number of tracks. Tracks are duplicated if n is greater than the absolute number of tracks
-func (v* Vault) GetTracks(n int) ([]string, error) {
+func (v *Vault) GetTracks(n int) ([]string, error) {
 
 	var tracks []string
 	playlist, err := v.GetFullPlaylist()
@@ -62,4 +61,4 @@ func (v* Vault) GetTracks(n int) ([]string, error) {
 	}
 
 	return tracks[:n], nil
-} 
+}

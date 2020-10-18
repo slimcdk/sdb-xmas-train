@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"os"
 	"time"
 )
@@ -12,9 +11,7 @@ var (
 
 // Clock TODO
 type Clock struct {
-	hour   int
-	minute int
-	second int
+	hour, minute, second int
 }
 
 // Hour TODO
@@ -60,7 +57,7 @@ func (c *Clock) Time() (int, int, int) {
 }
 
 // IsBetween TODO
-func (c *Clock) IsBetween(start, end Clock) (bool, error) {
+func (c *Clock) IsBetween(start, end Clock) bool {
 
 	// Times are converted to seconds past midnight
 	var (
@@ -69,9 +66,7 @@ func (c *Clock) IsBetween(start, end Clock) (bool, error) {
 		t int = (c.hour * 3600) + (c.minute * 60) + c.second
 	)
 
-	if s > e {
-		return false, errors.New("Start can not be greater than end")
-	}
+	//fmt.Printf("%d %d\n", t-s, e-s)
 
-	return (t - s) < (e - s), nil
+	return 0 <= (t-s) && (t-s) < (e-s)
 }
