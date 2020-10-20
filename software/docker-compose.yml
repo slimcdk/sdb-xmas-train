@@ -9,7 +9,7 @@ volumes:
 services:
 
   rtc:
-    build: ./rtc
+    build: ./src/rtc
     container_name: rtc
     privileged: true
     labels:
@@ -22,7 +22,7 @@ services:
 
 
   conductor:
-    build: ./conductor
+    build: ./src/conductor
     container_name: conductor
     privileged: true
     volumes:
@@ -38,7 +38,7 @@ services:
 
 
   music_vault:
-    build: ./music_vault
+    build: ./src/music_vault
     container_name: music_vault
     privileged: true
     volumes:
