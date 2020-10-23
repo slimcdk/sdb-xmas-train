@@ -196,9 +196,6 @@ Wire Wire Line
 Wire Wire Line
 	2150 2750 2250 2750
 Connection ~ 2150 3450
-Connection ~ 2050 1550
-Wire Wire Line
-	2050 1400 2050 1550
 Wire Wire Line
 	2150 1950 2250 1950
 Connection ~ 2150 2750
@@ -296,8 +293,6 @@ Wire Wire Line
 Wire Wire Line
 	2150 3450 2150 3600
 Wire Wire Line
-	2050 1550 2050 2350
-Wire Wire Line
 	2850 2150 2850 2450
 Text Notes 1100 1050 0    79   ~ 0
 RPi GPIO
@@ -356,7 +351,7 @@ F 1 "Conn_01x03_Female" H 6000 2250 50  0000 L CNN
 F 2 "TerminalBlock:TerminalBlock_bornier-3_P5.08mm" H 6500 2000 50  0001 C CNN
 F 3 "~" H 6500 2000 50  0001 C CNN
 	1    6500 2000
-	1    0    0    1   
+	1    0    0    -1  
 $EndComp
 Wire Wire Line
 	5500 1900 6300 1900
@@ -1281,10 +1276,6 @@ Wire Wire Line
 Wire Wire Line
 	2250 2450 1100 2450
 Wire Wire Line
-	2050 1550 2250 1550
-Wire Wire Line
-	2050 2350 2250 2350
-Wire Wire Line
 	1100 2250 2250 2250
 Wire Wire Line
 	1100 2150 2250 2150
@@ -1553,7 +1544,6 @@ Wire Wire Line
 Wire Wire Line
 	2850 1750 3150 1750
 Connection ~ 2850 1750
-NoConn ~ 2050 1400
 $Comp
 L Motor:Fan_3pin M1
 U 1 1 6047293B
@@ -1630,4 +1620,6 @@ F 3 "" H 4900 8800 50  0000 C CNN
 $EndComp
 NoConn ~ 4600 9200
 NoConn ~ 3550 9200
+NoConn ~ 2250 1550
+NoConn ~ 2250 2350
 $EndSCHEMATC
