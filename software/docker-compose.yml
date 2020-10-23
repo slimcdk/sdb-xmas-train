@@ -9,7 +9,9 @@ volumes:
 services:
 
   rtc:
-    build: ./src/rtc
+    build:
+      context: .
+      dockerfile: Dockerfile.rtc
     container_name: rtc
     privileged: true
     labels:
@@ -22,7 +24,9 @@ services:
 
 
   conductor:
-    build: ./src/conductor
+    build:
+      context: .
+      dockerfile: Dockerfile.conductor
     container_name: conductor
     privileged: true
     volumes:
@@ -38,8 +42,9 @@ services:
 
 
   music_vault:
-    build: ./src/music_vault
-    container_name: music_vault
+    build:
+      context: .
+      dockerfile: Dockerfile.vault
     privileged: true
     volumes:
       - music:/music

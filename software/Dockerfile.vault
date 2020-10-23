@@ -4,9 +4,11 @@ ENV UDEV=1
 
 
 WORKDIR /app
-COPY . .
-#COPY ../../go.mod .
-#COPY ../../go.sum .
+#COPY . .
+COPY pkg pkg
+COPY go.mod go.mod
+COPY go.sum go.sum
+COPY src/music_vault .
 
 
 RUN [ "cross-build-start" ]
@@ -14,13 +16,16 @@ RUN install_packages \
     build-essential \
     git \
     wget \
-    golang \
-    omxplayer
+    golang
 
-#RUN go mod download
+RUN go mod tidy
+RUN go mod download
 #RUN go test
-RUN go build
+RUN go build 
 
 RUN [ "cross-build-end" ]
 
-CMD ./conductor
+#COPY ./music /music
+
+
+CMD ./music_vault
