@@ -1,6 +1,0 @@
-language: go
-go:
-  - stable
-  - master
-install:
-  - go get -t ./...

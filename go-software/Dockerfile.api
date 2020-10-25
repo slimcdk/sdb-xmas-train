@@ -1,0 +1,37 @@
+FROM balenalib/raspberry-pi-golang:1.13
+
+
+ARG APP_PORT=3000
+
+ENV container docker
+ENV APP_PORT=$APP_PORT
+
+EXPOSE $APP_PORT
+
+
+
+# Application files
+WORKDIR /go/src/app
+COPY pkg/ pkg/
+COPY go.* ./
+COPY src/api/ src/api/
+COPY config.yaml /config/config.yaml
+
+
+# Allow to compile fo ARM on x86
+RUN [ "cross-build-start" ]
+
+# System dependencies
+RUN apt update && apt upgrade -y
+
+
+# Application build
+RUN go mod tidy
+RUN go mod download
+RUN go build -o app ./src/api/*
+
+
+RUN [ "cross-build-end" ]
+
+
+CMD ./app

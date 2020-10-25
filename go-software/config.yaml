@@ -1,0 +1,34 @@
+
+
+shop:
+    openhour:
+        hour: 8
+        minute: 0
+        second: 0
+    closehour:
+        hour: 20
+        minute: 0
+        seocnd: 0
+
+
+train:
+    max_speed: 160 # limit is 255
+    break_timeout: 600 # seconds
+    fallback_run_time: 300 # seconds
+    
+
+music:
+    directory: /music
+    upbeat_prefix: upbeat_
+    music_prefix: music_
+
+    normalize_volume: true
+    volume: 20
+    
+    upbeat_tracks_to_play: 1
+    tracks_to_play: 2
+
+
+frontend:
+    user: sdbtrain
+    pass: stjær2020

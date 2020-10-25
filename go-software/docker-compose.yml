@@ -1,0 +1,77 @@
+version: '2'
+
+
+volumes:
+  config: {}
+  music: {}
+
+
+services:
+
+  conductor:
+    build:
+      context: .
+      dockerfile: Dockerfile.conductor
+    container_name: conductor
+    privileged: true
+    volumes:
+      - config:/config:ro
+      - music:/music
+    labels:
+      io.balena.update.strategy: download-then-kill
+      io.balena.features.supervisor-api: '1'
+      io.balena.features.balena-api: '1'
+    depends_on:
+      - rtc
+    restart: 'always'
+
+
+  rtc:
+    build:
+      context: .
+      dockerfile: Dockerfile.rtc
+    container_name: rtc
+    privileged: true
+    labels:
+      io.balena.features.kernel-modules: '1'
+      io.balena.features.firmware: '1'
+      io.balena.features.dbus: '1'
+      io.balena.features.sysfs: '1'
+      io.balena.features.procfs: '1'
+    restart: 'no'
+
+
+  music_vault:
+    build:
+      context: .
+      dockerfile: Dockerfile.vault
+    privileged: true
+    volumes:
+      - config:/config:ro
+      - music:/music
+    labels:
+      io.balena.features.supervisor-api: '1'
+      io.balena.features.balena-api: '1'
+    restart: 'no'
+
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    volumes:
+      - config:/config:ro
+      - music:/music
+    ports:
+      - 3000:3000
+    labels:
+      io.balena.features.supervisor-api: '1'
+      io.balena.features.balena-api: '1'
+    restart: 'always'
+
+  
+#  frontend:
+#    build:
+#      context: .
+#      dockerfile: Dockerfile.frontend
+#    restart: 'always'

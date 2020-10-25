@@ -1,0 +1,33 @@
+FROM balenalib/raspberry-pi-golang:1.13
+
+
+ENV UDEV=1
+ENV container docker
+
+
+# Application files
+WORKDIR /go/src/app
+COPY pkg/ pkg/
+COPY go.* ./
+COPY src/music_vault/ src/music_vault/
+COPY config.yaml /config/config.yaml
+
+
+# Allow to compile fo ARM on x86
+RUN [ "cross-build-start" ]
+
+
+# System dependencies
+RUN apt update && apt upgrade -y
+
+
+# Application build
+RUN go mod tidy
+RUN go mod download
+RUN go build -o app ./src/music_vault/*
+
+
+RUN [ "cross-build-end" ]
+
+
+CMD ./app
