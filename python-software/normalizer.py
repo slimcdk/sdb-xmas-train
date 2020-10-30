@@ -1,20 +1,14 @@
+#!/usr/bin/python3
+
 import os
-
-
-get_env = lambda key, default: os.getenv(key) if os.getenv(key) is not None else default
-
-
-MUSIC_VAULT = get_env('MUSIC_DIR', '/music')
-print (MUSIC_VAULT)
-
-
-
-
-'''
 from glob import glob
 from pydub import AudioSegment
 
 
+print ("PROCESSSING MUSIC")
+exit(0)
+
+'''
 MUSIC_LIB_PATH = '/music'
 NORMALIZED_LIB_DIR = '.normalized_tracks'
 
@@ -57,5 +51,3 @@ for track in playlist:
 print ('normalizer finished')
 exit(0)
 '''
-
-

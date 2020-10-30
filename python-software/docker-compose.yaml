@@ -1,0 +1,29 @@
+version: '2'
+
+
+volumes:
+  config: {}
+  music: {}
+
+
+services:
+  hwclock:
+    build: 
+      context: .
+      dockerfile: ./Dockerfile.rtc
+    container_name: hwclock
+    privileged: true
+    restart: 'no'
+
+  conductor:
+    build: 
+      context: .
+      dockerfile: ./Dockerfile.conductor
+    container_name: conductor
+    privileged: true
+    volumes:
+      - config:/config:ro
+      - music:/music
+    depends_on:
+      - hwclock
+    restart: unless-stopped
