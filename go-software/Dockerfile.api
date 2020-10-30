@@ -23,6 +23,7 @@ RUN [ "cross-build-start" ]
 
 # System dependencies
 RUN apt update && apt upgrade -y
+RUN apt autoremove -y
 
 
 # Application build

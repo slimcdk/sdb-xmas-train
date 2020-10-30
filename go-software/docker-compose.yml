@@ -17,10 +17,12 @@ services:
     volumes:
       - config:/config:ro
       - music:/music
-    labels:
-      io.balena.update.strategy: download-then-kill
-      io.balena.features.supervisor-api: '1'
-      io.balena.features.balena-api: '1'
+    devices:
+      - /dev/i2c-1:/dev/i2c-1
+      - /dev/mem:/dev/mem
+      - /dev/gpiomem:/dev/gpiomem
+    cap_add:
+      - SYS_RAWIO
     depends_on:
       - rtc
     restart: 'always'
@@ -32,12 +34,10 @@ services:
       dockerfile: Dockerfile.rtc
     container_name: rtc
     privileged: true
-    labels:
-      io.balena.features.kernel-modules: '1'
-      io.balena.features.firmware: '1'
-      io.balena.features.dbus: '1'
-      io.balena.features.sysfs: '1'
-      io.balena.features.procfs: '1'
+    devices:
+      - /dev/i2c-1:/dev/i2c-1
+    cap_add:
+      - SYS_RAWIO
     restart: 'no'
 
 
@@ -49,9 +49,6 @@ services:
     volumes:
       - config:/config:ro
       - music:/music
-    labels:
-      io.balena.features.supervisor-api: '1'
-      io.balena.features.balena-api: '1'
     restart: 'no'
 
 
@@ -63,10 +60,7 @@ services:
       - config:/config:ro
       - music:/music
     ports:
-      - 3000:3000
-    labels:
-      io.balena.features.supervisor-api: '1'
-      io.balena.features.balena-api: '1'
+      - 80:3000
     restart: 'always'
 
   
