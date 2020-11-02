@@ -14,7 +14,7 @@ PCB_LAYERS = [
 ];
 
 o = 2.5;
-pcb_mounting_holes = [[0, 42], [-67, 42], [-92, 22], [-91.5,-39], [-28.5,-79], [74.5,-79], [74.5,-28.75], [74.5,21.5], [67, 42]];
+pcb_mounting_holes = [[0, 42], [-67, 42], [-92, 22], [-91.5,-39], [-28.5,-79], [76.5,-79], [76.5,-28.75], [76.5,21.5], [67, 42]];
 fan_size = 40;
 fhs=fan_size/2-4;
 fan_shroud_holes = [[-60,-6], [22,18]/*, [5,-60]*/];
@@ -28,7 +28,7 @@ translate([0,-205/2]) rotate([0,0,180]) {
 }
 
 translate([0,205/2]) {
-    translate([0,0,10+13]) color("green") motherboard(layers_dir="production-files/", use_layers=false, $fn=60);
+    translate([0,0,10+13]) color("green") !projection() motherboard(layers_dir="production-files/", use_layers=false, $fn=60);
     color("yellow") mb_mount($fn=100);
     color("beige") for (p=fan_shroud_holes) translate([p[0],p[1],11]) fan_body($fn=60);
 }
