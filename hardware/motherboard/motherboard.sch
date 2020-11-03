@@ -4,10 +4,10 @@ EELAYER END
 $Descr User 15748 11024
 encoding utf-8
 Sheet 1 1
-Title ""
-Date "15 nov 2012"
-Rev ""
-Comp ""
+Title "SDB XMAS TRAIN"
+Date "2020-11-03"
+Rev "0.2"
+Comp "github.com/slimcdk/sdb-xmas-train"
 Comment1 ""
 Comment2 ""
 Comment3 ""
