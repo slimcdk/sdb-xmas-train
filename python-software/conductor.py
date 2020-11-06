@@ -15,12 +15,6 @@ motor_relay_pin = 13
 ssr_pin = 11
 
 
-# music variables
-MUSIC_LIB_DIR = '/music'
-NORMALIZED_LIB_DIR = '.normalized_tracks'
-
-
-last_played_track = None
 player = None
 playlist = []
 run_music = False
@@ -41,7 +35,7 @@ GRAPH_TRANSITION_THRESHOLD = 5 # between 0 and MAX_SPEED: (MAX_SPEED/2) will eli
 
 # managing variables
 OPEN_HOUR = time(8, 0, 0)
-CLOSE_HOUR = time(21, 45, 0)
+CLOSE_HOUR = time(20, 00, 0)
 progress_start_time = 0
 default_run_time = 40
 run_time = default_run_time
@@ -77,7 +71,6 @@ def setup():
   current_date = datetime.now()
   current_time = datetime.timestamp(current_date)
   progress_start_time = current_time
-  progress = 0
 
   print('found upbeat playlist:\n', get_upbeat_playlist(), '\nand playlist:\n', get_playlist(), '\n')
   print('Ready!')
@@ -218,7 +211,6 @@ def is_shop_open(date):
         return OPEN_HOUR <= date.time() <= CLOSE_HOUR
     else:
         return OPEN_HOUR <= date.time() or date.time() <= CLOSE_HOUR
-
 
 
 

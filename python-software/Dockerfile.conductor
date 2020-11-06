@@ -19,22 +19,7 @@ RUN pip3 install -r requirements.txt
 RUN [ "cross-build-end" ]
 
 
-
-# Preprocess music
-ARG MUSIC_VAULT=/music
-ENV MUSIC_VAULT=${MUSIC_VAULT}
-COPY music ${MUSIC_VAULT}
-
-COPY normalizer.py normalizer.py
-RUN chmod +x normalizer.py
-RUN normalizer.py
-
-#COPY normalize.sh normalize.sh
-#RUN chmod +x /app/normalize.sh
-#RUN /app/normalize.sh
-
-
-
 # Run application
+COPY music /music
 COPY conductor.py conductor.py
 CMD python3 conductor.py

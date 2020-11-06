@@ -1,4 +1,17 @@
+import os, random
+import numpy as np
 
+from datetime import datetime, time
+from glob import glob
+from mutagen.mp3 import MP3
+
+
+
+# music variables
+MUSIC_LIB_DIR = '/music'
+NORMALIZED_LIB_DIR = '.normalized_tracks'
+
+last_played_track = None
 
 
 
