@@ -4,7 +4,7 @@ FROM balenalib/raspberry-pi-python:3.7-build as build
 WORKDIR /tmp
 
 # Install dependencies
-COPY requirements.txt requirements.txt
+COPY src/requirements.txt requirements.txt
 RUN [ "cross-build-start" ]
 #RUN apt-get update && apt-get upgrade -y
 RUN install_packages \
@@ -25,20 +25,15 @@ RUN [ "cross-build-end" ]
 FROM build as music-normalizer
 
 WORKDIR /app
-
+COPY src .
 COPY music /music
-COPY music_vault.py music_vault.py
-COPY utils.py utils.py
-COPY normalizer.py normalizer.py
-
-#RUN /usr/bin/python3 /app/normalizer.py
 ## ##
 
 
 
 
 ## Bulding stage for application ##
-FROM build 
+FROM build
 #balenalib/raspberry-pi:latest
 
 ENV INITSYSTEM on
@@ -47,9 +42,7 @@ ENV CONTAINER docker
 WORKDIR /app
 
 COPY --from=music-normalizer /music /music
-COPY music_vault.py music_vault.py
-COPY utils.py utils.py
-COPY conductor.py conductor.py
+COPY src .
 
 CMD python conductor.py
 ## ##

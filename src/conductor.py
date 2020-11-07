@@ -6,7 +6,7 @@ from glob import glob
 from mutagen.mp3 import MP3
 from omxplayer.player import OMXPlayer
 
-from music_vault import *
+from musician import *
 from utils import *
 
 
