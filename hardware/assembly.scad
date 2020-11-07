@@ -28,7 +28,7 @@ translate([0,-205/2]) rotate([0,0,180]) {
 }
 
 translate([0,205/2]) {
-    translate([0,0,10+13]) color("green") !projection() motherboard(layers_dir="production-files/", use_layers=false, $fn=60);
+    translate([0,0,10+13]) color("green") /*!projection()*/ motherboard(layers_dir="production-files/", use_layers=false, $fn=60);
     color("yellow") mb_mount($fn=100);
     color("beige") for (p=fan_shroud_holes) translate([p[0],p[1],11]) fan_body($fn=60);
 }
