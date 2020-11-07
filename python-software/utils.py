@@ -8,6 +8,7 @@ def get_env(key, fallback):
         return fallback
     return value
 
+
 def parse_time_from_string (time_str):
     try:
         h = int(time_str[0:2])
