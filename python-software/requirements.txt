@@ -1,4 +1,5 @@
-#omxplayer-wrapper
-#RPI.GPIO
+omxplayer-wrapper
+RPI.GPIO
 mutagen
 pydub
+numpy

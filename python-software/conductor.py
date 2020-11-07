@@ -1,13 +1,20 @@
-import os, random, time as timer
+import os, random, threading, logging, time as timer
 import RPi.GPIO as GPIO
 import numpy as np
-
 from datetime import datetime, time
 from glob import glob
 from mutagen.mp3 import MP3
 from omxplayer.player import OMXPlayer
 
 from music_vault import *
+from utils import *
+
+
+OPEN_HOUR = parse_time_from_string(get_env('OPEN_HOUR', '08:00:00'))
+CLOSE_HOUR = parse_time_from_string(get_env('CLOSE_HOUR', '20:00:00'))
+print(f'Open hour {OPEN_HOUR} - Close hour {CLOSE_HOUR}')
+timer.sleep(30)
+
 
 
 motor_vr_pin = 12
@@ -15,12 +22,6 @@ motor_relay_pin = 13
 ssr_pin = 11
 
 
-# music variables
-MUSIC_LIB_DIR = '/music'
-NORMALIZED_LIB_DIR = '.normalized_tracks'
-
-
-last_played_track = None
 player = None
 playlist = []
 run_music = False
@@ -40,8 +41,8 @@ GRAPH_TRANSITION_THRESHOLD = 5 # between 0 and MAX_SPEED: (MAX_SPEED/2) will eli
 
 
 # managing variables
-OPEN_HOUR = time(8, 0, 0)
-CLOSE_HOUR = time(21, 45, 0)
+OPEN_HOUR = parse_time_from_string(get_env('OPEN_HOUR', '08:00:00'))
+CLOSE_HOUR = parse_time_from_string(get_env('CLOSE_HOUR', '20:00:00'))
 progress_start_time = 0
 default_run_time = 40
 run_time = default_run_time
@@ -49,6 +50,7 @@ stop_time = (5 * 60)
 progress = 0
 print_time = 0
 do_print = False
+
 
 
 def setup():
@@ -70,19 +72,24 @@ def setup():
   motor = GPIO.PWM(motor_vr_pin, 1000)
   motor.start(100-0)
 
-  if os.path.exists(os.path.join(MUSIC_LIB_DIR, NORMALIZED_LIB_DIR)):
-    MUSIC_LIB_DIR = os.path.join(MUSIC_LIB_DIR, NORMALIZED_LIB_DIR)
-    print('Found normalized tracks directory ->', MUSIC_LIB_DIR)
-
   current_date = datetime.now()
   current_time = datetime.timestamp(current_date)
   progress_start_time = current_time
-  progress = 0
 
-  print('found upbeat playlist:\n', get_upbeat_playlist(), '\nand playlist:\n', get_playlist(), '\n')
+  #print('found upbeat playlist:\n', get_upbeat_playlist(), '\nand playlist:\n', get_playlist(), '\n')
   print('Ready!')
 
+  while True:
+    print("Open")
+    GPIO.output(motor_relay_pin, GPIO.HIGH)
+    timer.sleep(5)
+    print("Close")
+    GPIO.output(motor_relay_pin, GPIO.LOW)
+    timer.sleep(5)
 
+
+
+'''
 def loop_async():
   """ main loop that implements a non-blocking strategy """
   global motor, progress_start_time, MIN_SPEED, run_time, stop_time, new_playlist, player, playlist, track_stop_time, tracks_to_play, default_run_time, print_time, progress, do_print
@@ -178,35 +185,18 @@ def loop_async():
     print_time = current_time + 1
     do_print = False
     print('{}  (shop is {})   |   progress: {:03.0f}, {:03.0f}, {:03.0f} ({:03.0f}%)  speed: {:.02f}  (relay {})   |  stop music at: {:.02f}  playlist: {}'.format(current_date, ("open" if shop_is_open else "closed"), progress, run_time, stop_time, progress/(run_time+stop_time)*100, speed, "on" if relay_on else "off", track_stop_time, [track.split('/')[-1] for track in playlist]), end='\n',flush=False)
+'''
 
 
 
-def speed_graph(progress, duration):
-  """computes a speed graph from the given progress and duration times"""
-  global MAX_SPEED, MIN_SPEED, GRAPH_TRANSITION_THRESHOLD, BOOT_COEF, BREAK_COEF
-
-  SPEED = MAX_SPEED - MIN_SPEED
-
-  # lower bounds (pick largest number)
-  progress = max(0, progress)
-  duration = max(30, duration)
-
-  # shared computations
-  numerator = np.log((SPEED / GRAPH_TRANSITION_THRESHOLD) - 1)
-
-  # boot graph
-  boot_graph_offset = (numerator / np.log(BOOT_COEF))
-  boot_vector = SPEED / (1 + BOOT_COEF**(-progress + boot_graph_offset))
-
-  # break graph
-  break_graph_offset = (numerator / np.log(BREAK_COEF)) - duration
-  break_vector = SPEED / (1 + BREAK_COEF**(progress + break_graph_offset))
-
-  # compute final speed vector
-  speed_vector = boot_vector + break_vector - SPEED + MIN_SPEED
-
-  # constrain and return
-  return min(100, max(0, speed_vector))
+def run_show_sequence():
+  pass
+  # get and play upbeat track
+  # start train at full speed
+  # sleep 1 sec
+  # set speedto 50%
+  # get and play 2 tracks
+  # set speed to 0%
 
 
 
@@ -218,7 +208,6 @@ def is_shop_open(date):
         return OPEN_HOUR <= date.time() <= CLOSE_HOUR
     else:
         return OPEN_HOUR <= date.time() or date.time() <= CLOSE_HOUR
-
 
 
 
