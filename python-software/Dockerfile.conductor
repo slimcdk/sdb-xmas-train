@@ -1,14 +1,24 @@
-#FROM  balenalib/rpi-raspbian:latest
-FROM balenalib/raspberry-pi-python:3
+FROM  balenalib/rpi-raspbian:latest
+
 
 WORKDIR /app
 
 
-# Install dependencies
+# Copy data
+COPY music /music
 COPY requirements.txt requirements.txt
+COPY music_vault.py music_vault.py
+COPY utils.py utils.py
+COPY conductor.py conductor.py
+
+
+# Install dependencies
 RUN [ "cross-build-start" ]
 RUN apt-get update && apt-get upgrade -y
 RUN install_packages \
+    libatlas-base-dev \
+    python3 \
+    python3-pip \
     python3-numpy \
     ffmpeg \
     omxplayer
@@ -20,6 +30,4 @@ RUN [ "cross-build-end" ]
 
 
 # Run application
-COPY music /music
-COPY conductor.py conductor.py
 CMD python3 conductor.py

@@ -1,24 +1,18 @@
 import os, random
+from glob import glob
 import numpy as np
 
-from datetime import datetime, time
-from glob import glob
-from mutagen.mp3 import MP3
 
-
-
-# music variables
-MUSIC_LIB_DIR = '/music'
-NORMALIZED_LIB_DIR = '.normalized_tracks'
 
 last_played_track = None
-
+MUSIC_LIB_DIR = '/music'
+if os.path.exists(os.path.join(MUSIC_LIB_DIR, '.normalized_tracks')):
+  MUSIC_LIB_DIR = os.path.join(MUSIC_LIB_DIR, '.normalized_tracks')
+  print('Found normalized tracks directory ->', MUSIC_LIB_DIR)
 
 
 def get_sub_playlist(tracks_to_play):
   """returns a playlist fraction"""
-  #return random.sample(get_playlist(), k=tracks_to_play)
-
   sublist = []
   for i in range(tracks_to_play):
     sublist.append(get_new_track())
