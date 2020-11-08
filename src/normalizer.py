@@ -12,17 +12,11 @@ MUSIC_LIB_PATH = '/music'
 target_gain = -20
 
 
-
 def normalize_tracks():
 
   playlist = get_full_playlist()
   print('Found {} tracks to be normalized to {} db'.format(len(playlist), target_gain))
 
-  # Rename tracks
-  for track in get_full_playlist():
-    new_name = track.replace(" ", ".").replace("-","").replace("..", ".")
-    os.rename(os.path.join(get_vault_path(), track), os.path.join(get_vault_path(), new_name))
-    
   # Adjust gain
   for track in get_full_playlist():
     try:
@@ -36,10 +30,10 @@ def normalize_tracks():
 
 
 
-normalize_tracks()
-
-
 
 def match_target_amplitude(track, target_dbfs):
   change_in_dbfs = target_dbfs - track.dBFS
   return track.apply_gain(change_in_dbfs)
+
+
+normalize_tracks()

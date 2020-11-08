@@ -15,7 +15,7 @@ def get_vault_path():
 def get_sub_playlist(tracks_to_play):
   """returns a playlist fraction"""
   sublist = []
-  for i in range(tracks_to_play):
+  for _ in range(tracks_to_play):
     sublist.append(get_new_track())
   return sublist
 
@@ -33,7 +33,7 @@ def get_upbeat_track():
     upbeat_tracks = get_upbeat_playlist()
     return random.choice(upbeat_tracks)
   except:
-    return []
+    return None
 
 
 def get_new_track():
@@ -61,3 +61,5 @@ def get_playlist():
 def get_full_playlist():
   """gets a list of track file names from the vault"""
   return [os.path.split(track)[-1] for track in glob(os.path.join(MUSIC_LIB_DIR, '*.mp3'))]
+
+
