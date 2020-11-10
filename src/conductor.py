@@ -1,6 +1,4 @@
-import os, random, threading, logging, time as timer
-import RPi.GPIO as GPIO
-import numpy as np
+import os, threading, logging, time as timer, RPi.GPIO as GPIO
 from datetime import datetime
 from omxplayer.player import OMXPlayer
 
@@ -11,15 +9,13 @@ from utils import *
 SSR_PIN = 11
 MOTOR_VR_PIN = 12
 MOTOR_RELAY_PIN = 13
-
 MOTOR = None
 
 OPEN_HOUR = parse_time_from_string(get_env('OPEN_HOUR', '08:00:00'))
 CLOSE_HOUR = parse_time_from_string(get_env('CLOSE_HOUR', '20:00:00'))
+TRACKS_TO_PLAY = int(get_env('TRACKS_TO_PLAY', 2))
+BREAK_TIME = int(get_env('BREAK_TIME', 300))
 
-
-tracks_to_play = 2
-stop_time = (5 * 60)
 ready_to_log = True
 ready_for_next_run = True
 
@@ -39,7 +35,6 @@ def setup():
   GPIO.output([MOTOR_RELAY_PIN, SSR_PIN], GPIO.LOW)
   MOTOR = GPIO.PWM(MOTOR_VR_PIN, 1000)
   MOTOR.start(100-0)
-
   print('Ready!')
 
 
@@ -68,12 +63,12 @@ def run_show_sequence():
   # Play upbeat track
   player = OMXPlayer(os.path.join(get_vault_path(), get_upbeat_track()))
 
-  MOTOR.ChangeDutyCycle(0) # equal to full speed
+  MOTOR.ChangeDutyCycle(0)
   timer.sleep(2)
-  MOTOR.ChangeDutyCycle(50) # equal to half speed
+  MOTOR.ChangeDutyCycle(50)
 
   # Play music playlist
-  for track in get_sub_playlist(2):
+  for track in get_sub_playlist(TRACKS_TO_PLAY):
     if not shop_is_open():
       break
     print(f'Now playing {track}')
@@ -85,7 +80,7 @@ def run_show_sequence():
   GPIO.output(MOTOR_RELAY_PIN, GPIO.LOW)
 
   # Pause until next
-  timer.sleep(stop_time)
+  timer.sleep(BREAK_TIME)
   ready_for_next_run = True
 
 
@@ -111,9 +106,10 @@ def main():
   setup()
   while True:
     loop()
+
+  GPIO.cleanup()
   print("EXITING")
   
-  GPIO.cleanup()
 
 if __name__ == '__main__':
   main()

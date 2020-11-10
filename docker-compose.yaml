@@ -16,7 +16,7 @@ services:
     restart: 'no'
 
   conductor:
-    build: 
+    build:
       context: .
       dockerfile: ./Dockerfile.conductor
     container_name: conductor
