@@ -92,10 +92,10 @@ def run_show_sequence():
 
 def logging():
   """Log handler"""
-  global ready_to_log
+  global ready_to_log, has_running_show, ready_for_next_run
 
-  print (f"shop is {['closed', 'open'][shop_is_open()]}")
-  timer.sleep(10)
+  print (f"shop is {['closed', 'open'][shop_is_open()]}\tshow is running {has_running_show}\tready for next show {ready_for_next_run}")
+  timer.sleep(1)
   ready_to_log = True
 
 

@@ -1,43 +1,18 @@
+FROM balenalib/raspberry-pi-python:3.7-build
 
+WORKDIR /app
 
-## Bulding stage for dependencies ##
-FROM balenalib/raspberry-pi-python:3.7-build as build
-WORKDIR /tmp
+COPY audio/sounds /music
+COPY audio/music /music
+COPY src/conductor/ .
 
-COPY src/requirements.txt requirements.txt
 RUN [ "cross-build-start" ]
-#RUN install_packages libatlas-base-dev python3-numpy ffmpeg omxplayer
+RUN install_packages libatlas-base-dev python3-numpy ffmpeg omxplayer
 RUN pip3 install --upgrade pip
 RUN pip3 install -r requirements.txt
-RUN [ "cross-build-end" ]
-## ##
 
-
-
-
-## Building stage for prepairing music vault ##
-FROM build as music-normalizer
-WORKDIR /app
-COPY src .
-COPY music /music
-## ##
-
-
-
-
-## Bulding stage for application ##
-FROM balenalib/raspberry-pi-python:3.7-run
-COPY --from=music-normalizer /music /music
-COPY --from=build /usr/local/lib/python3.7/site-packages/ /usr/local/lib/python3.7/site-packages/
-RUN [ "cross-build-start" ]
-RUN install_packages omxplayer
+RUN ffmpeg-normalize -vf /music/*.mp3
 RUN [ "cross-build-end" ]
 
 
-ENV INITSYSTEM on
-ENV CONTAINER docker
-
-WORKDIR /app
-COPY src .
 CMD python conductor.py
-## ##

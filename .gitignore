@@ -1,5 +1,5 @@
 logs
-music*/
+audio/
 
 .vscode/*
 !.vscode/settings.json

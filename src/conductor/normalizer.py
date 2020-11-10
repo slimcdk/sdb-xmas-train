@@ -36,4 +36,7 @@ def match_target_amplitude(track, target_dbfs):
   return track.apply_gain(change_in_dbfs)
 
 
-normalize_tracks()
+try:
+  normalize_tracks()
+finally:
+  print("Failed")

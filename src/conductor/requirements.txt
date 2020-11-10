@@ -3,3 +3,4 @@ RPI.GPIO
 mutagen
 pydub
 numpy
+ffmpeg-normalize
