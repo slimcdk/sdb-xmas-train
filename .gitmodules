@@ -1,0 +1,3 @@
+[submodule "hardware/motherboard/stlehmann/kicad-library"]
+	path = hardware/motherboard/stlehmann/kicad-library
+	url = https://github.com/stlehmann/kicad-library

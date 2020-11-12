@@ -14,10 +14,10 @@ PCB_LAYERS = [
 ];
 
 o = 2.5;
-pcb_mounting_holes = [[0, 42], [-67, 42], [-92, 22], [-91.5,-39], [-28.5,-79], [76.5,-79], [76.5,-28.75], [76.5,21.5], [67, 42]];
+pcb_mounting_holes = [[0, 42], [-67, 42], [-92, 22], [-91.5,-39], [-28.5,-79], [76.5-10,-79], [76.5-10,-18.5-10], /*[76.5,21.5],*/ [67, 42]];
 fan_size = 40;
 fhs=fan_size/2-4;
-fan_shroud_holes = [[-60,-6], [22,18]/*, [5,-60]*/];
+fan_shroud_holes = [[-60,-6], [32,18]/*, [5,-60]*/];
 fan_mounting_holes = [for (fs=fan_shroud_holes) for (p=[[fhs,fhs], [fhs,-fhs], [-fhs,-fhs], [-fhs,fhs]]) fs+p];
 
 
@@ -28,8 +28,8 @@ translate([0,-205/2]) rotate([0,0,180]) {
 }
 
 translate([0,205/2]) {
-    translate([0,0,10+13]) color("green") /*!projection()*/ motherboard(layers_dir="production-files/", use_layers=false, $fn=60);
-    color("yellow") !mb_mount($fn=100);
+    translate([0,0,10+13]) color("green") !projection() motherboard(layers_dir="production-files/", use_layers=false, $fn=60);
+    color("yellow") mb_mount($fn=100);
     color("beige") for (p=fan_shroud_holes) translate([p[0],p[1],11]) fan_body($fn=60);
 }
 
@@ -52,10 +52,10 @@ module motherboard(layers_dir, use_layers=false) {
         [-32, -50-32],
     
         // Third corner
-        [80, -50-32],
+        [70, -50-32],
     
         // Forth corner
-        [80, 45-20],
+        [70, 45-20],
         [70, 45-20],
         [70, 45]
     ];
@@ -71,7 +71,7 @@ module motherboard(layers_dir, use_layers=false) {
 
         // Modules
         translate([-60,-10]) rotate([0,0,-90]) mirror([0,1,0]) rpi(fan=false);
-        translate([18,18]) rotate([0,0,-180]) motor_esc(debug=false);
+        translate([28,18]) rotate([0,0,-180]) motor_esc(debug=false);
         translate([-45,34]) rotate([0,0,90]) rtc(debug=false);      
     }
     

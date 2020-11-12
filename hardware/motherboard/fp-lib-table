@@ -1,4 +1,5 @@
 (fp_lib_table
   (lib (name Local_Heatsink)(type KiCad)(uri ${KIPRJMOD}/Local_Heatsink.pretty)(options "")(descr ""))
   (lib (name Local_Transformer_Audio)(type KiCad)(uri ${KIPRJMOD}/Local_Transformer_Audio.pretty)(options "")(descr ""))
+  (lib (name Converters_DCDC_ACDC)(type KiCad)(uri ${KIPRJMOD}/stlehmann/kicad-library/modules/Converters_DCDC_ACDC.pretty)(options "")(descr ""))
 )
