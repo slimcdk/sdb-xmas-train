@@ -21,9 +21,9 @@ services:
       dockerfile: ./Dockerfile.conductor
     container_name: conductor
     privileged: true
-    volumes:
-      - config:/config:ro
-      - music:/music
+#    volumes:
+#      - config:/config:ro
+#      - music:/music
     depends_on:
       - hwclock
     restart: unless-stopped

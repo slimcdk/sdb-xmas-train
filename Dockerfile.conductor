@@ -1,18 +1,33 @@
-FROM balenalib/raspberry-pi-python:3.7-build
+FROM balenalib/raspberry-pi-python:3.7-build AS build
 
-WORKDIR /app
+WORKDIR /tmp
 
-COPY audio/sounds /music
-COPY audio/music /music
-COPY src/conductor/ .
-
+COPY src/conductor/requirements.txt requirements.txt
 RUN [ "cross-build-start" ]
 RUN install_packages libatlas-base-dev python3-numpy ffmpeg omxplayer
 RUN pip3 install --upgrade pip
 RUN pip3 install -r requirements.txt
+RUN [ "cross-build-end" ]
 
+
+
+FROM build AS audio-stage
+
+COPY audio/sounds /music
+COPY audio/music /music
+
+RUN [ "cross-build-start" ]
+RUN pip3 install ffmpeg-normalize
 RUN ffmpeg-normalize -vf /music/*.mp3
 RUN [ "cross-build-end" ]
 
 
+
+
+FROM build AS app-stage
+
+COPY --from=audio-stage /music /music
+
+WORKDIR /app
+COPY src/conductor/ .
 CMD python conductor.py

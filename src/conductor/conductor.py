@@ -35,7 +35,7 @@ def setup():
 
   GPIO.output([MOTOR_EL_PIN, GPIO11], GPIO.LOW)
   MOTOR = GPIO.PWM(MOTOR_VR_PIN, 1000)
-  MOTOR.start(100-0) # Is equal to zero speed
+  MOTOR.start(0) # Is equal to zero speed
   print('Ready!')
 
 
@@ -51,7 +51,6 @@ def loop():
       threading.Thread(target=run_show_sequence).start()
 
   if ready_to_log is True:
-    ready_to_log = False
     threading.Thread(target=logging).start()
 
 
@@ -66,8 +65,9 @@ def run_show_sequence():
 
   # Play upbeat track
   player = OMXPlayer(os.path.join(get_vault_path(), get_upbeat_track()))
+  timer.sleep(player.duration())
 
-  MOTOR.ChangeDutyCycle(0)
+  MOTOR.ChangeDutyCycle(100)
   timer.sleep(2)
   MOTOR.ChangeDutyCycle(50)
 
@@ -80,7 +80,7 @@ def run_show_sequence():
     timer.sleep(player.duration())
   
   # Disable train motor
-  MOTOR.ChangeDutyCycle(100) # equal to zero speed
+  MOTOR.ChangeDutyCycle(0)
   GPIO.output(MOTOR_EL_PIN, GPIO.LOW)
 
   # Pause until next
@@ -93,7 +93,7 @@ def run_show_sequence():
 def logging():
   """Log handler"""
   global ready_to_log, has_running_show, ready_for_next_run
-
+  ready_to_log = False
   print (f"shop is {['closed', 'open'][shop_is_open()]}\tshow is running {has_running_show}\tready for next show {ready_for_next_run}")
   timer.sleep(1)
   ready_to_log = True
@@ -107,16 +107,16 @@ def shop_is_open():
 
 
 
-def main():
+if __name__ == '__main__':
+  killer = GracefulKiller()
+
   try:
     setup()
-    while True:
+    while not killer.kill_now:
       loop()
+  except KeyboardInterrupt as ex:
+    print('Gracefully shutting down')
   finally:
     GPIO.cleanup()
-    sys.exit(0)
     print("Shutting down")
-  
-
-if __name__ == '__main__':
-  main()
+    sys.exit(0)
