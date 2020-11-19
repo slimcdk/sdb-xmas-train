@@ -6,10 +6,12 @@ from musician import *
 from utils import *
 
 # Pin assignments
-GPIO11        = 11  # Solid State Relay
-GPIO19        = 19  # AUX output
 MOTOR_VR_PIN  = 12  # Motor speed
-MOTOR_EL_PIN  = 13  # Motor enable
+MOTOR_EL_PIN  = 19  # Motor enable
+SSR_PIN       = 21  # Solid State Relay
+AUX           = 18  # AUX output
+
+
 
 MOTOR = None
 OPEN_HOUR = parse_time_from_string(get_env('OPEN_HOUR', '08:00:00'))
@@ -17,9 +19,18 @@ CLOSE_HOUR = parse_time_from_string(get_env('CLOSE_HOUR', '20:00:00'))
 TRACKS_TO_PLAY = int(get_env('TRACKS_TO_PLAY', 2))
 BREAK_TIME = int(get_env('BREAK_TIME', 300))
 
+ENABLE_MOTOR = bool(get_env('ENABLE_MOTOR', True))
+ENABLE_MUSIC = bool(get_env('ENABLE_MUSIC', True))
+ENABLE_LIGHT = bool(get_env('ENABLE_LIGHT', True))
+
 ready_to_log = True
 ready_for_next_run = True
 has_running_show = False
+train_speed = 50
+train_boost_speed = 100
+train_boost_time = 2
+train_break_time = 2
+
 
 
 def setup():
@@ -31,11 +42,11 @@ def setup():
   # Configure IO
   GPIO.setmode(GPIO.BCM)
   GPIO.setwarnings(False)
-  GPIO.setup([MOTOR_VR_PIN, MOTOR_EL_PIN, GPIO11], GPIO.OUT)
-
-  GPIO.output([MOTOR_EL_PIN, GPIO11], GPIO.LOW)
+  GPIO.setup([MOTOR_VR_PIN, MOTOR_EL_PIN, SSR_PIN], GPIO.OUT)
+  GPIO.output([MOTOR_EL_PIN, SSR_PIN], GPIO.LOW)
   MOTOR = GPIO.PWM(MOTOR_VR_PIN, 1000)
   MOTOR.start(0) # Is equal to zero speed
+  
   print('Ready!')
 
 
@@ -44,7 +55,8 @@ def loop():
   """Continous business logic"""
   global ready_for_next_run, ready_to_log, has_running_show
  
-  GPIO.output(GPIO11, shop_is_open() or has_running_show)
+  if ENABLE_LIGHT:
+    GPIO.output(SSR_PIN, shop_is_open() or has_running_show)
 
   if shop_is_open() is True and ready_for_next_run is True:
       ready_for_next_run = False
@@ -60,28 +72,35 @@ def run_show_sequence():
   global ready_for_next_run, has_running_show
   has_running_show = True
 
-  # Enable train motor
-  GPIO.output(MOTOR_EL_PIN, GPIO.HIGH)
-
   # Play upbeat track
-  player = OMXPlayer(os.path.join(get_vault_path(), get_upbeat_track()))
-  timer.sleep(player.duration())
+  if ENABLE_MUSIC:
+    player = OMXPlayer(os.path.join(get_vault_path(), get_upbeat_track()))
+    timer.sleep(player.duration())
 
-  MOTOR.ChangeDutyCycle(100)
-  timer.sleep(2)
-  MOTOR.ChangeDutyCycle(50)
+  # Start train motor
+  if ENABLE_MOTOR:
+    GPIO.output(MOTOR_EL_PIN, GPIO.HIGH)
+    MOTOR.ChangeDutyCycle(train_boost_speed)
+    timer.sleep(train_boost_time)
+    MOTOR.ChangeDutyCycle(train_speed)
 
   # Play music playlist
-  for track in get_sub_playlist(TRACKS_TO_PLAY):
-    if not shop_is_open():
-      break
-    print(f'Now playing {track}')
-    player.load(os.path.join(get_vault_path(), track))
-    timer.sleep(player.duration())
+  if ENABLE_MUSIC:
+    for track in get_sub_playlist(TRACKS_TO_PLAY):
+      if not shop_is_open():
+        break
+      print(f'Now playing {track}')
+      player.load(os.path.join(get_vault_path(), track))
+      timer.sleep(player.duration())
   
   # Disable train motor
+  step_size = 1
+  for dc in range(train_speed, 0, -step_size):
+    MOTOR.ChangeDutyCycle(dc)
+    timer.sleep(train_break_time / train_speed * step_size)
   MOTOR.ChangeDutyCycle(0)
   GPIO.output(MOTOR_EL_PIN, GPIO.LOW)
+  timer.sleep(1)
 
   # Pause until next
   has_running_show = False
