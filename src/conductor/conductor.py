@@ -19,16 +19,10 @@ CLOSE_HOUR = parse_time_from_string(get_env('CLOSE_HOUR', '20:00:00'))
 TRACKS_TO_PLAY = int(get_env('TRACKS_TO_PLAY', 2))
 BREAK_TIME = int(get_env('BREAK_TIME', 300))
 
-ENABLE_MOTOR = bool(get_env('ENABLE_MOTOR', True))
-ENABLE_MUSIC = bool(get_env('ENABLE_MUSIC', True))
-ENABLE_LIGHT = bool(get_env('ENABLE_LIGHT', True))
-
 ready_to_log = True
 ready_for_next_run = True
 has_running_show = False
-train_speed = 50
-train_boost_speed = 100
-train_boost_time = 2
+train_speed = 100
 train_break_time = 2
 
 
@@ -44,7 +38,7 @@ def setup():
   GPIO.setwarnings(False)
   GPIO.setup([MOTOR_VR_PIN, MOTOR_EL_PIN, SSR_PIN], GPIO.OUT)
   GPIO.output([MOTOR_EL_PIN, SSR_PIN], GPIO.LOW)
-  MOTOR = GPIO.PWM(MOTOR_VR_PIN, 1000)
+  MOTOR = GPIO.PWM(MOTOR_VR_PIN, 8000)
   MOTOR.start(0) # Is equal to zero speed
   
   print('Ready!')
@@ -55,8 +49,8 @@ def loop():
   """Continous business logic"""
   global ready_for_next_run, ready_to_log, has_running_show
  
-  if ENABLE_LIGHT:
-    GPIO.output(SSR_PIN, shop_is_open() or has_running_show)
+
+  GPIO.output(SSR_PIN, shop_is_open() or has_running_show)
 
   if shop_is_open() is True and ready_for_next_run is True:
       ready_for_next_run = False
@@ -73,26 +67,27 @@ def run_show_sequence():
   has_running_show = True
 
   # Play upbeat track
-  if ENABLE_MUSIC:
-    player = OMXPlayer(os.path.join(get_vault_path(), get_upbeat_track()))
-    timer.sleep(player.duration())
+  upbeat_track = get_upbeat_track()
+  upbeat_track_path = os.path.join(get_vault_path(), upbeat_track)
+  print(f'Now playing upbeat track {upbeat_track}')
+  player = OMXPlayer(upbeat_track_path)
+  player.set_volume(4)
+  timer.sleep(player.duration())
 
   # Start train motor
-  if ENABLE_MOTOR:
-    GPIO.output(MOTOR_EL_PIN, GPIO.HIGH)
-    MOTOR.ChangeDutyCycle(train_boost_speed)
-    timer.sleep(train_boost_time)
-    MOTOR.ChangeDutyCycle(train_speed)
+  GPIO.output(MOTOR_EL_PIN, GPIO.HIGH)
+  MOTOR.ChangeDutyCycle(train_speed)
 
   # Play music playlist
-  if ENABLE_MUSIC:
-    for track in get_sub_playlist(TRACKS_TO_PLAY):
-      if not shop_is_open():
-        break
-      print(f'Now playing {track}')
-      player.load(os.path.join(get_vault_path(), track))
-      timer.sleep(player.duration())
-  
+  for track in get_sub_playlist(TRACKS_TO_PLAY):
+    if not shop_is_open():
+      break
+    print(f'Now playing music track {track}')
+    player.load(os.path.join(get_vault_path(), track))
+    player.set_volume(2)
+    timer.sleep(player.duration())
+    player.set_volume(0)
+
   # Disable train motor
   step_size = 1
   for dc in range(train_speed, 0, -step_size):
