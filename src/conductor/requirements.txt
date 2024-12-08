@@ -1,4 +1,4 @@
-omxplayer-wrapper
+python-vlc
 RPI.GPIO
 mutagen
 pydub

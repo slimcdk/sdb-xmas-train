@@ -4,7 +4,7 @@ WORKDIR /tmp
 
 COPY src/conductor/requirements.txt requirements.txt
 RUN [ "cross-build-start" ]
-RUN install_packages libatlas-base-dev python3-numpy ffmpeg omxplayer
+RUN install_packages libatlas-base-dev python3-numpy ffmpeg vlc
 #RUN pip3 install --upgrade pip
 RUN pip3 install -r requirements.txt
 RUN [ "cross-build-end" ]
